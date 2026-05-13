@@ -9,6 +9,7 @@ import {
     Share2,
     UserRound,
     Users,
+    Warehouse,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
 import { index as modulesIndex } from '@/routes/administration/modules';
@@ -19,6 +20,7 @@ import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
 import { index as countriesIndex } from '@/routes/shared/countries';
 import { index as statesIndex } from '@/routes/shared/states';
+import { index as productsIndex } from '@/routes/stock/products';
 import type { NavItem } from '@/types';
 
 export const mainNavItems: NavItem[] = [
@@ -45,6 +47,18 @@ export const mainNavItems: NavItem[] = [
                 title: 'Permisos',
                 href: permissionsIndex(),
                 icon: KeyRound,
+            },
+        ],
+    },
+    {
+        title: 'Stock',
+        icon: Warehouse,
+        items: [
+            {
+                title: 'Productos',
+                href: productsIndex(),
+                icon: Package,
+                permission: 'stock.products.list',
             },
         ],
     },

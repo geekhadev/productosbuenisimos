@@ -8,6 +8,7 @@ use Database\Seeders\Administration\PermissionsSeeder;
 use Database\Seeders\Configuration\CompaniesSeeder;
 use Database\Seeders\Shared\CountriesSeeder;
 use Database\Seeders\Shared\StatesSeeder;
+use Database\Seeders\Stock\ProductSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -28,6 +29,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(PermissionsSeeder::class);
         $this->call(CompaniesSeeder::class);
+        $this->call(ProductSeeder::class);
         $this->call(CountriesSeeder::class);
         $this->call(StatesSeeder::class);
     }

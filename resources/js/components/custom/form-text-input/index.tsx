@@ -42,21 +42,23 @@ export function FormTextInput({
                     {required ? <span aria-hidden="true"> (*)</span> : null}
                 </Label>
             ) : null}
-            <Input
-                {...inputProps}
-                id={inputId}
-                type={type}
-                placeholder={placeholder}
-                required={required}
-                className={cn(inputProps.className, inputClassName)}
-                aria-invalid={hasError ? true : inputProps['aria-invalid']}
-                aria-describedby={ariaDescribedBy}
-            />
-            <InputError
-                id={errorMessageId}
-                message={hasError ? trimmedError : undefined}
-                className={errorClassName}
-            />
+            <div className="grid w-full gap-0.5">
+                <Input
+                    {...inputProps}
+                    id={inputId}
+                    type={type}
+                    placeholder={placeholder}
+                    required={required}
+                    className={cn(inputProps.className, inputClassName)}
+                    aria-invalid={hasError ? true : inputProps['aria-invalid']}
+                    aria-describedby={ariaDescribedBy}
+                />
+                <InputError
+                    id={errorMessageId}
+                    message={hasError ? trimmedError : undefined}
+                    className={errorClassName}
+                />
+            </div>
         </div>
     );
 }

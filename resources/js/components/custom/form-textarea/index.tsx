@@ -39,20 +39,22 @@ export function FormTextarea({
                 {label}
                 {required ? <span aria-hidden="true"> (*)</span> : null}
             </Label>
-            <Textarea
-                {...textareaProps}
-                id={textareaId}
-                placeholder={placeholder}
-                required={required}
-                className={cn(textareaProps.className, textareaClassName)}
-                aria-invalid={hasError ? true : textareaProps['aria-invalid']}
-                aria-describedby={ariaDescribedBy}
-            />
-            <InputError
-                id={errorMessageId}
-                message={hasError ? trimmedError : undefined}
-                className={errorClassName}
-            />
+            <div className="grid w-full gap-0.5">
+                <Textarea
+                    {...textareaProps}
+                    id={textareaId}
+                    placeholder={placeholder}
+                    required={required}
+                    className={cn(textareaProps.className, textareaClassName)}
+                    aria-invalid={hasError ? true : textareaProps['aria-invalid']}
+                    aria-describedby={ariaDescribedBy}
+                />
+                <InputError
+                    id={errorMessageId}
+                    message={hasError ? trimmedError : undefined}
+                    className={errorClassName}
+                />
+            </div>
         </div>
     );
 }

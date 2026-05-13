@@ -82,6 +82,17 @@ class PermissionsSeeder extends Seeder
                     ],
                 ],
             ],
+            [
+                'system_name' => 'Stock',
+                'system_slug' => 'stock',
+                'modules' => [
+                    [
+                        'module_name' => 'Productos',
+                        'module_slug' => 'products',
+                        'permissions' => $permissions_crud,
+                    ],
+                ],
+            ],
         ];
 
         foreach ($structure as $systemRow) {

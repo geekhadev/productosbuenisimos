@@ -67,48 +67,50 @@ export function FormSelect({
                     {required ? <span aria-hidden="true"> (*)</span> : null}
                 </Label>
             ) : null}
-            <div className="relative w-full">
-                <select
-                    {...restSelectProps}
-                    id={selectId}
-                    {...(isControlled ? { value: selectValue } : {})}
-                    {...(!isControlled && mergedDefaultValue !== undefined
-                        ? { defaultValue: mergedDefaultValue }
-                        : {})}
-                    required={required}
-                    className={cn(
-                        selectBaseClassName,
-                        selectPropsClassName,
-                        selectClassName,
-                    )}
-                    aria-invalid={hasError ? true : selectAriaInvalid}
-                    aria-describedby={ariaDescribedBy}
-                >
-                    {showPlaceholderOption ? (
-                        <option value="" disabled>
-                            {placeholder}
-                        </option>
-                    ) : null}
-                    {options.map((opt, index) => {
-                        const value = String(opt.id);
-
-                        return (
-                            <option key={`${value}-${index}`} value={value}>
-                                {opt.label}
+            <div className="grid w-full gap-0.5">
+                <div className="relative w-full">
+                    <select
+                        {...restSelectProps}
+                        id={selectId}
+                        {...(isControlled ? { value: selectValue } : {})}
+                        {...(!isControlled && mergedDefaultValue !== undefined
+                            ? { defaultValue: mergedDefaultValue }
+                            : {})}
+                        required={required}
+                        className={cn(
+                            selectBaseClassName,
+                            selectPropsClassName,
+                            selectClassName,
+                        )}
+                        aria-invalid={hasError ? true : selectAriaInvalid}
+                        aria-describedby={ariaDescribedBy}
+                    >
+                        {showPlaceholderOption ? (
+                            <option value="" disabled>
+                                {placeholder}
                             </option>
-                        );
-                    })}
-                </select>
-                <ChevronDownIcon
-                    className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground opacity-50"
-                    aria-hidden
+                        ) : null}
+                        {options.map((opt, index) => {
+                            const value = String(opt.id);
+
+                            return (
+                                <option key={`${value}-${index}`} value={value}>
+                                    {opt.label}
+                                </option>
+                            );
+                        })}
+                    </select>
+                    <ChevronDownIcon
+                        className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground opacity-50"
+                        aria-hidden
+                    />
+                </div>
+                <InputError
+                    id={errorMessageId}
+                    message={hasError ? trimmedError : undefined}
+                    className={errorClassName}
                 />
             </div>
-            <InputError
-                id={errorMessageId}
-                message={hasError ? trimmedError : undefined}
-                className={errorClassName}
-            />
         </div>
     );
 }

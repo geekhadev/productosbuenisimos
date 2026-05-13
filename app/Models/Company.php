@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CompanyDocumentType;
 use App\Models\Configuration\Role;
+use App\Models\Stock\Product;
 use Database\Factories\CompanyFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -79,6 +80,14 @@ class Company extends Model
     public function integrationSettings(): HasMany
     {
         return $this->hasMany(CompanyIntegrationSetting::class, 'company_id');
+    }
+
+    /**
+     * @return HasMany<Product, $this>
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class, 'company_id');
     }
 
     protected static function newFactory(): CompanyFactory
