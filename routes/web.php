@@ -34,6 +34,10 @@ Route::middleware(['auth', 'verified', EnsureCompanySelected::class])->group(fun
         require __DIR__.'/stock.php';
     });
 
+    Route::prefix('sales')->name('sales.')->group(function () {
+        require __DIR__.'/sales.php';
+    });
+
     Route::prefix('api')->name('api.')->group(function () {
         Route::get('companies/{company}/roles', CompanyAssignableRolesController::class)
             ->name('companies.roles.index');

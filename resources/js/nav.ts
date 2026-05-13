@@ -7,6 +7,7 @@ import {
     MapPin,
     Package,
     Share2,
+    ShoppingCart,
     UserRound,
     Users,
     Warehouse,
@@ -18,6 +19,7 @@ import { index as systemsIndex } from '@/routes/administration/systems';
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
+import { index as customersIndex } from '@/routes/sales/customers';
 import { index as countriesIndex } from '@/routes/shared/countries';
 import { index as statesIndex } from '@/routes/shared/states';
 import { index as productsIndex } from '@/routes/stock/products';
@@ -59,6 +61,18 @@ export const mainNavItems: NavItem[] = [
                 href: productsIndex(),
                 icon: Package,
                 permission: 'stock.products.list',
+            },
+        ],
+    },
+    {
+        title: 'Ventas',
+        icon: ShoppingCart,
+        items: [
+            {
+                title: 'Clientes',
+                href: customersIndex(),
+                icon: Users,
+                permission: 'sales.customers.list',
             },
         ],
     },

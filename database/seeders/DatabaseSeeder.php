@@ -6,6 +6,7 @@ use App\Enums\UserType;
 use App\Models\User;
 use Database\Seeders\Administration\PermissionsSeeder;
 use Database\Seeders\Configuration\CompaniesSeeder;
+use Database\Seeders\Sales\CustomerSeeder;
 use Database\Seeders\Shared\CountriesSeeder;
 use Database\Seeders\Shared\StatesSeeder;
 use Database\Seeders\Stock\ProductSeeder;
@@ -30,6 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call(PermissionsSeeder::class);
         $this->call(CompaniesSeeder::class);
         $this->call(ProductSeeder::class);
+        $this->call(CustomerSeeder::class);
         $this->call(CountriesSeeder::class);
         $this->call(StatesSeeder::class);
     }

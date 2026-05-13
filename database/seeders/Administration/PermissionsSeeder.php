@@ -93,6 +93,17 @@ class PermissionsSeeder extends Seeder
                     ],
                 ],
             ],
+            [
+                'system_name' => 'Ventas',
+                'system_slug' => 'sales',
+                'modules' => [
+                    [
+                        'module_name' => 'Clientes',
+                        'module_slug' => 'customers',
+                        'permissions' => $permissions_crud,
+                    ],
+                ],
+            ],
         ];
 
         foreach ($structure as $systemRow) {
