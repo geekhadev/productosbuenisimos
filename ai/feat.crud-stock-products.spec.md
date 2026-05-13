@@ -30,8 +30,8 @@ Permitir administrar el catálogo de productos del inventario **por la empresa a
 
 1. El usuario con permiso **Listar** y empresa en contexto abre el menú bajo el grupo **Stock** y entra a **Productos**.
 2. Ve el listado **solo de productos de la empresa seleccionada**, paginado, con **filtro por estado activo/inactivo**, búsqueda y ordenación; puede **mostrar u ocultar columnas** (preferencia persistida en el cliente).
-3. Con **Crear** abre el formulario; al guardar, el producto queda asociado a la empresa de sesión; se valida unicidad de `name`, `code` y `sku` **en esa empresa**.
-4. Con **Actualizar** edita un registro existente **solo si el producto sigue activo** (`is_active === true`); las reglas de unicidad aplican **por empresa** ignorando el propio registro. Un producto **inactivo no admite edición** (ni por formulario ni por `PUT`/`PATCH` de actualización): la UI no muestra la acción editar y el backend responde no autorizado si se fuerza la ruta.
+3. Con **Crear** abre el formulario; al guardar, el producto queda asociado a la empresa de sesión; se valida unicidad de `name`, `code` y `sku` **en esa empresa**; tras guardar, el flujo vuelve al **listado** de productos.
+4. Con **Actualizar** edita un registro existente **solo si el producto sigue activo** (`is_active === true`); las reglas de unicidad aplican **por empresa** ignorando el propio registro. Un producto **inactivo no admite edición** (ni por formulario ni por `PUT`/`PATCH` de actualización): la UI no muestra la acción editar y el backend responde no autorizado si se fuerza la ruta. Tras guardar, el flujo vuelve al **listado** de productos.
 5. Desde la tabla, con **Desactivar** (acción dedicada), pasa `is_active` a `false` sin borrar el registro. Requiere permiso `stock.products.update` y producto aún activo; la policy define la ability **`deactivate`** (separada de **`update`**) para autorizar esta acción sin relajar la regla de “solo editar si activo”.
 6. Con **Eliminar** (baja lógica) solo puede confirmar si el producto está **inactivo** (`is_active === false`); si está activo, el sistema rechaza la operación e indica que primero debe desactivarse.
 
@@ -125,9 +125,9 @@ tabla: stock_products (convención sugerida; ajustar si el proyecto usa otro pre
 | Campo           | Reglas                                                                                                                                 |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `company_id`  | En **store**: derivado solo de sesión, obligatorio implícito. En **update**: inmutable; debe coincidir con el de sesión y con el del modelo. |
-| `name`          | obligatorio, string, max razonable (p. ej. 255), único en `stock_products` **scoped por `company_id`**                               |
-| `code`          | obligatorio, string, max razonable, único **scoped por `company_id`**                                                                |
-| `sku`           | obligatorio, string, max razonable, único **scoped por `company_id`**                                                                |
+| `name`          | obligatorio, string, max razonable (p. ej. 255); único por empresa entre **activos**; si el valor coincide solo con un producto **eliminado** (soft delete), error explícito en el campo mencionando que está eliminado                               |
+| `code`          | obligatorio, string, max razonable; misma regla que `name` respecto a activos vs eliminados                                                                                                                                |
+| `sku`           | obligatorio, string, max razonable; misma regla que `name` respecto a activos vs eliminados                                                                                                                                 |
 | `width`         | a veces ausente en request: nullable o `sometimes`; default 0; si presente: numérico ≥ 0                                               |
 | `length`        | igual que `width`                                                                                                                      |
 | `height`        | igual que `width`                                                                                                                      |
@@ -136,6 +136,8 @@ tabla: stock_products (convención sugerida; ajustar si el proyecto usa otro pre
 | `minimum_stock` | igual que `width` (entero si aplica)                                                                                                   |
 | `price`         | opcional en formulario; numérico ≥ 0; default 0                                                                                        |
 | `is_active`     | boolean, opcional; default `true`                                                                                                    |
+
+En **alta**, si `name`, `code` o `sku` coinciden con un registro **solo eliminado en baja lógica** (`deleted_at` no nulo), la validación debe devolver un error explícito en el campo correspondiente indicando que ese producto **está eliminado** y que no se puede duplicar hasta restaurar o cambiar el identificador (no bastar con el mensaje genérico de `unique`).
 
 En **actualización**, reglas `unique` para `name`, `code` y `sku` deben incluir `where('company_id', …)` e **ignorar el `id` del registro actual**.
 

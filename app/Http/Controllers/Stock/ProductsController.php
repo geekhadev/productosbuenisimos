@@ -76,11 +76,11 @@ class ProductsController extends Controller
             abort(404);
         }
 
-        $product = $action->execute($companyId, $request->productPayload());
+        $action->execute($companyId, $request->productPayload());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Producto creado.']);
 
-        return to_route('stock.products.edit', $product);
+        return to_route('stock.products.index');
     }
 
     public function edit(Request $request, Product $product): Response
@@ -103,7 +103,7 @@ class ProductsController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Producto actualizado.']);
 
-        return to_route('stock.products.edit', $product);
+        return to_route('stock.products.index');
     }
 
     public function deactivate(Request $request, Product $product, DeactivateProductAction $action): RedirectResponse
