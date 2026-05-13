@@ -125,4 +125,20 @@ class User extends Authenticatable
             )
             ->exists();
     }
+
+    public function hasCompanyPermission(string $permissionSlug, string $companyId): bool
+    {
+        if ($this->type === UserType::Root) {
+            return true;
+        }
+
+        return $this->companyRoles()
+            ->where('company_id', $companyId)
+            ->whereHas('role', function (Builder $roleQuery) use ($permissionSlug): void {
+                $roleQuery->whereHas('permissions', function (Builder $permQuery) use ($permissionSlug): void {
+                    $permQuery->where('slug', $permissionSlug);
+                });
+            })
+            ->exists();
+    }
 }
