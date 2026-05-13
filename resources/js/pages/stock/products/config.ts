@@ -21,7 +21,6 @@ export type ProductsIndexPageProps = {
 
 const PAGE = {
     title: 'Productos',
-    description: 'Catálogo de productos por empresa.',
     searchPlaceholder: 'Nombre, código o SKU…',
 } as const;
 
@@ -29,7 +28,6 @@ const ORDER = { sort: 'name', direction: 'asc' } as const;
 
 export const CONFIG_TABLEDATA = {
     pageTitle: PAGE.title,
-    pageDescription: PAGE.description,
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {

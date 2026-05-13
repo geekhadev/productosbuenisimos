@@ -9,8 +9,8 @@ import {
 import type { TabledataColumn } from '@/components/custom/tabledata';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CONFIG_TABLEDATA  } from '@/pages/stock/products/config';
-import type {ProductsIndexPageProps} from '@/pages/stock/products/config';
+import { CONFIG_TABLEDATA } from '@/pages/stock/products/config';
+import type { ProductsIndexPageProps } from '@/pages/stock/products/config';
 import { ProductsIndexFilters } from '@/pages/stock/products/filters';
 import { useProductsIndex } from '@/pages/stock/products/hooks/use-index';
 import type {
@@ -145,15 +145,6 @@ function ProductsIndex() {
     return (
         <>
             <Head title={CONFIG_TABLEDATA.pageTitle} />
-
-            <div className="space-y-1 px-4 pt-3">
-                <h1 className="text-2xl font-semibold tracking-tight">
-                    {CONFIG_TABLEDATA.pageTitle}
-                </h1>
-                <p className="text-muted-foreground text-sm">
-                    {CONFIG_TABLEDATA.pageDescription}
-                </p>
-            </div>
 
             <TabledataProvider<ProductRow, ProductListFilters, ProductsIndexFiltersDraftFull>
                 listConfig={pickTabledataListShellConfig({
