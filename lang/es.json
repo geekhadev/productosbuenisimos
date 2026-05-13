@@ -1,0 +1,22 @@
+{
+    "Task created.": "Tarea creada.",
+    "Task updated.": "Tarea actualizada.",
+    "Task deleted.": "Tarea eliminada.",
+    "System created.": "Sistema creado.",
+    "System updated.": "Sistema actualizado.",
+    "System deleted.": "Sistema eliminado.",
+    "Module created.": "Módulo creado.",
+    "Module updated.": "Módulo actualizado.",
+    "Module deleted.": "Módulo eliminado.",
+    "Permission created.": "Permiso creado.",
+    "Permission updated.": "Permiso actualizado.",
+    "Permission deleted.": "Permiso eliminado.",
+    "The slug is too long for the selected module.": "El slug resultante es demasiado largo para el módulo seleccionado.",
+    "That slug is already taken.": "Ese slug ya está en uso.",
+    "The slug is too long for the selected system.": "El slug resultante es demasiado largo para el sistema seleccionado.",
+    "Profile updated.": "Perfil actualizado.",
+    "Password updated.": "Contraseña actualizada.",
+    "Country created.": "País creado.",
+    "Country updated.": "País actualizado.",
+    "Country deleted.": "País eliminado."
+}

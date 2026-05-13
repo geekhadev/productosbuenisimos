@@ -1,0 +1,30 @@
+---
+description: Modelos Eloquent (relaciones, casts, scopes). Aplica a app/Models. No aplica en puro frontend ni solo migraciones sin tocar modelos.
+globs: app/Models/**/*.php
+alwaysApply: false
+---
+
+# Spec: Modelos
+
+## Cuándo aplica esta regla
+
+- Crear o modificar clases en `app/Models/`.
+- Relaciones, `$casts`, scopes reutilizables, accessors/mutators de dominio de datos.
+
+## Cuándo NO aplica (no forzar)
+
+- Trabajo **solo en frontend** (`resources/js/`, UI, estilos).
+- **Solo migraciones** sin abrir ni actualizar modelos (usa la regla de migraciones).
+- Lógica de orquestación de negocio que debe ir en **Actions**, no en el modelo (si la tarea es solo “añadir un caso de uso”, la regla principal puede ser Actions + controlador).
+- Config, rutas, controladores sin cambios en `app/Models/`.
+
+**Criterio:** si no vas a leer ni escribir `app/Models/**/*.php`, no trates esta regla como obligatoria para la tarea.
+
+## Principio
+
+Los modelos son la capa Eloquent sobre las tablas: atributos, relaciones, casts y scopes de consulta. Usar el ORM; no SQL crudo en el modelo.
+
+## Lo que NUNCA hacer en modelos
+
+- Lógica de aplicación de negocio (orquestación) en modelos.
+- Provocar consultas N+1; eager load cuando corresponda.

@@ -1,0 +1,46 @@
+---
+description: Migraciones Laravel (schema, índices, naming). Solo relevante al editar database/migrations. No aplica en puro frontend ni lógica PHP fuera de migraciones.
+globs: database/migrations/**/*.php
+alwaysApply: false
+---
+
+# Spec: Base de datos y migrations
+
+## Cuándo aplica esta regla
+
+- Crear o modificar archivos en `database/migrations/`.
+- Cambiar tablas, columnas, índices o FKs con el schema builder de Laravel.
+
+## Cuándo NO aplica (no forzar)
+
+- **Solo frontend** (React, Inertia, assets, tipos TS).
+- Cambios solo en modelos, controladores, Actions o seeders **sin** archivo nuevo o editado en `database/migrations/` (el spec de modelos u otras reglas cubren eso).
+- Lógica de negocio, comandos artisan de datos masivos que no sean definición de esquema.
+- SQL crudo en otros contextos (queries en app) — esta regla es solo para migraciones.
+
+**Criterio:** si no trabajas en `database/migrations/**/*.php`, no centres la respuesta en esta regla.
+
+## Principio
+
+Las migraciones son **descripciones del estado de la base de datos**. Usar el schema builder de Laravel; no escribir SQL crudo en las migraciones.
+
+## Índices: reglas obligatorias
+
+**Indexar siempre:**
+
+- Todas las claves foráneas (ej. `clinic_id`).
+- `created_at` en tablas con más de ~10k registros esperados.
+- Columnas usadas en `WHERE` frecuentes (ej. `is_active`).
+- Columnas usadas en `ORDER BY` frecuentes.
+
+## Naming conventions
+
+- Tablas: `snake_case` plural (`patients`, `appointments`, `medical_records`).
+- Columnas: `snake_case` (`name`, `is_active`, `clinic_id`, `created_at`).
+- FKs: `{modelo_singular}_id` (`clinic_id`).
+- Tablas pivot: modelos en orden alfabético (`appointment_patient`).
+
+## Lo que NUNCA hacer en migrations
+
+- Migraciones sin `down()` implementado.
+- Lógica de aplicación en migrations.

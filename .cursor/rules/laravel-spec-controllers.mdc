@@ -1,0 +1,40 @@
+---
+description: Controladores REST delgados (PHP). Aplica solo si editas app/Http/Controllers o la capa HTTP. No aplica en trabajo exclusivamente frontend (React/Inertia, Tailwind, tipos TS sin tocar PHP).
+globs: app/Http/Controllers/**/*.php
+alwaysApply: false
+---
+
+# Spec: Controladores RESTful
+
+## Cuándo aplica esta regla
+
+- Crear o modificar clases en `app/Http/Controllers/`.
+- Definir o cambiar el comportamiento de endpoints HTTP (rutas que delegan en controladores).
+- Revisar o refactors de la capa HTTP (Form Requests + controlador, respuestas Inertia/API).
+- Tareas full-stack donde **sí** entras a archivos de controlador.
+
+## Cuándo NO aplica (no forzar)
+
+- El agente infiere **trabajo solo de frontend**: páginas/componentes React, hooks, estilos, accesibilidad, textos, sin cambios en PHP de controladores.
+- Cambios solo en `resources/js/` sin tocar `app/Http/Controllers/`.
+- Solo migraciones, solo modelos, solo Actions, solo rutas sin abrir controladores (raro; si no editas controladores, esta regla no es la guía principal).
+- Configuración (`config/`), proveedores, jobs/commands sin capa HTTP.
+
+**Criterio:** si no vas a leer ni escribir `app/Http/Controllers/**/*.php`, esta regla no debe condicionar la respuesta.
+
+## Principio
+
+Los controladores son **delgados**. Su único trabajo es:
+
+1. Recibir el HTTP request.
+2. Delegar al Action correspondiente.
+3. Retornar la respuesta HTTP.
+
+Un método de controlador no debe superar las ~15 líneas. Validación y autorización básica van en Form Requests (y Policies cuando aplique).
+
+## Qué NO va en el controlador
+
+- Lógica de negocio → Actions.
+- Queries complejas → scopes del modelo o Actions.
+- Validación de campos → Form Requests.
+- Autorización compleja → Policies.

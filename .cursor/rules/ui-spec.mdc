@@ -1,0 +1,65 @@
+---
+description: UI React/Inertia — componentes, UX, a11y, Wayfinder en enlaces. Aplica a interfaz en resources/js. No aplica en puro PHP, migraciones o solo tipos sin diseño/estructura UI.
+globs: resources/js/**/*.tsx,resources/js/**/*.jsx
+alwaysApply: false
+---
+
+# Spec: Interfaz (UI)
+
+## Cuándo aplica esta regla
+
+- Componentes, páginas o layouts en `resources/js/` (JSX/TSX): estructura, composición, patrones de UI.
+- Navegación visible, formularios, tablas, modales, feedback al usuario, accesibilidad en la interfaz.
+- Coherencia visual (Tailwind en componentes), debounce en inputs, evitar anti-patrones de UX listados abajo.
+
+## Cuándo NO aplica (no forzar)
+
+- **Solo backend**: PHP, migraciones, seeders, colas, sin cambios de interfaz.
+- **Solo tipos** sin tocar markup ni comportamiento de UI (la regla `ts-spec-types` basta).
+- Solo APIs o contratos servidor sin archivos de vista/componente.
+- Configuración de herramientas sin JSX.
+
+**Criterio:** si no estás editando presentación o interacción en `resources/js/**/*.tsx` (u `.jsx`), no uses esta regla como guía principal.
+
+## Patrones de componentes
+
+- **Antes de crear un componente nuevo**, buscar en `components/` y `components/ui/` algo reutilizable (Button, Input, Card, Dialog, Sheet, etc.).
+
+- **Diálogos:** `DialogContent` (`@/components/ui/dialog`) y `AlertDialogContent` (`@/components/ui/alert-dialog`) usan por defecto **`sm:max-w-lg`**. Solo añade otra clase de ancho (`sm:max-w-3xl`, etc.) cuando el flujo lo requiera; ver `ai/rules-ui.md` §8 «Ancho por defecto de los diálogos».
+
+- **Intentar entender que nuevos componentes pueden ser reusables**, por ejemplo un custom input que se puede usar en diferentes formularios y que ya contengan el input, label, error, etc. (Deben ir en el directorio `components/custom/`).
+
+- Mantener **coherencia visual** con el resto del dashboard: misma escala de radios, sombras (`shadow-xs` donde ya se usa), tipografía (`font-sans` del tema).
+
+- Separar la lógica de la presentación en componentes incluso separar el hook en un archivo aparte dentro del mismo directorio del componente de manera de evitar que el componente se vuelva muy grande y complejo.
+
+- Separar los tipos de datos en un archivo aparte dentro del mismo directorio del componente de manera de evitar que el componente se vuelva muy grande y complejo.
+
+## Navegación y rutas
+
+- Enlaces y formularios hacia el backend: **Wayfinder** (`@/actions`, `@/routes`) en lugar de URLs hardcodeadas.
+
+## Optimización
+
+- Si hay inputs que ejecutan un handle con change usar debounce para optimizar el rendimiento.
+- Evitar renderizados innecesarios de componentes.
+
+## Expeciencias de usuario
+
+- Evitar que elementos se salgan de la pantalla del navegar.
+- Evitar multiples scrolls en el mismo sentido (horizontal o vertical).
+- Evitar que las cabeceras de las tablas se muevan al hacer scroll (sticky headers).
+
+## Accesibilidad
+
+- Elementos interactivos deben ser **focalizables** y tener estado claro (focus ring acorde al tema).
+- Usar etiquetas asociadas a inputs (`Label` + `htmlFor` / `id`), textos alternativos en iconos decorativos solo si aportan significado; botones con `aria-*` cuando el UI lo requiera (Radix ya cubre muchos casos).
+- Optimiza los componentes para que sean compatibles con el modo oscuro.
+
+## Qué evitar
+
+- Duplicar bloques grandes de JSX que ya existen como layout o componente.
+- Crear archivos con muchos subcomponentes internos.
+- Evitar componentes muy grandes y complejos.
+- Mezclar convenciones de naming (el proyecto usa  kebab-case — mantener consistencia).
+- No crear funciones utilitarias dentro de los componentes que no sean propios del componente.

@@ -1,0 +1,49 @@
+---
+description: Actions Laravel (una operación por clase). Aplica al editar app/Actions. No aplica en puro frontend ni solo UI/TS sin lógica servidor en Actions.
+globs: app/Actions/**/*.php
+alwaysApply: false
+---
+
+# Spec: Actions
+
+## Cuándo aplica esta regla
+
+- Crear o modificar clases en `app/Actions/` (incl. subcarpetas como `Fortify/` si aplica al patrón Action del proyecto).
+- Diseñar o refactorizar **lógica de negocio** que deba vivir fuera del controlador.
+- Revisar orquestación llamada desde controladores, jobs o listeners cuando el archivo tocado es un Action.
+
+## Cuándo NO aplica (no forzar)
+
+- Trabajo **exclusivamente frontend** (React, Inertia, Tailwind, tipos en `resources/js/`) sin nuevos ni cambios en `app/Actions/`.
+- Solo migraciones o solo esquema de BD sin lógica de aplicación en Actions.
+- Solo modelos (relaciones/casts/scopes) sin extraer ni tocar Actions.
+- Configuración, rutas o vistas sin archivos bajo `app/Actions/`.
+
+**Criterio:** si no vas a leer ni escribir `app/Actions/**/*.php`, no uses esta regla como marco principal.
+
+## ¿Qué es un Action?
+
+Un Action es una clase que encapsula **una única operación de negocio**. Es la única capa donde vive la lógica del sistema.
+
+- Puede ser llamado desde un controlador, desde un job; nunca al revés.
+- Un Action puede llamar a otros Actions.
+
+## Convenciones de nomenclatura
+
+Los nombres deben ser verbos que describan exactamente lo que hacen:
+
+- `CreatePatientAction`, `UpdatePatientAction`, `DeletePatientAction`
+
+## Cuándo dividir en múltiples Actions
+
+Si un Action hace más de una cosa conceptual, dividirlo:
+
+- `CreateAndNotifyPatientAction` → demasiado acoplado.
+- Preferir `CreatePatientAction` que crea el paciente y delega al siguiente Action, y por ejemplo un listener o Action aparte para la notificación de bienvenida.
+
+## Lo que un Action NUNCA debe hacer
+
+- Acceder a `request()` o `auth()` → responsabilidad del controlador o de la capa de infraestructura.
+- Retornar respuestas HTTP.
+- Contener validación de formato (eso es Form Request).
+- Superar ~50 líneas de forma habitual; si crece, extraer métodos privados o sub-Actions.

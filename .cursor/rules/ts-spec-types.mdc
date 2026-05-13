@@ -1,0 +1,70 @@
+---
+description: Tipos TypeScript en resources/js (props, dominio, Wayfinder). No aplica en PHP, migraciones ni trabajo solo Blade/backend sin TS.
+globs: resources/js/**/*.ts,resources/js/**/*.tsx
+alwaysApply: false
+---
+
+# Spec: tipos TypeScript
+
+## Cuándo aplica esta regla
+
+- Archivos `.ts` / `.tsx` bajo `resources/js/` (tipos, props, contratos, utilidades tipadas).
+- Definir o refactorizar tipos compartidos, barrels en `types/`, alineación con Inertia/Wayfinder.
+
+## Cuándo NO aplica (no forzar)
+
+- **Solo backend PHP** (controladores, Actions, modelos, migraciones) sin cambios en TS.
+- Solo CSS/Tailwind en strings sin decisiones de sistema de tipos.
+- Configuración de build (Vite, ESLint) salvo que el cambio sea explícitamente de tipos en código fuente.
+- Documentación o reglas del repo sin tocar `resources/js/`.
+
+**Criterio:** si la tarea no implica TypeScript en `resources/js/`, prioriza otras reglas o convenciones del stack.
+
+## Alcance
+
+- Aplica al frontend en `resources/js/` (React, Inertia, utilidades).
+- Los tipos deben ser **explícitos en APIs públicas** (props de componentes exportados, funciones compartidas, módulos de dominio). Evitar `any`; usar `unknown` y estrechar antes de usar.
+
+## Dónde vivien los tipos
+
+- **Dominio o uso transversal** (auth, navegación, layout, UI compartida): `resources/js/types/`, un archivo por tema (`auth.ts`, `navigation.ts`, …) y **barrel** en `types/index.ts` con `export type * from './…';`.
+- **Acoplados a una página, feature o componente**: archivo dedicado en el mismo directorio (p. ej. `types.ts` o convención local coherente con el módulo), como ya indica el spec de UI para componentes grandes.
+
+## Nomenclatura
+
+- Nombres de tipos e interfaces en **PascalCase**: `PatientFormProps`, `BreadcrumbItem`.
+- Props de componentes: sufijo opcional `Props` cuando aporta claridad (`UserCardProps`).
+- Archivos de tipos: **kebab-case** alineado al resto del frontend (`patient-form.ts`, no `PatientForm.ts`).
+
+## `type` vs `interface`
+
+- Preferir **`type`** para objetos, uniones, intersecciones y tipos utilitarios; es la convención predominante en `resources/js/types/`.
+- Usar **`interface`** solo si se necesita **extensión por merging** declarativo (poco habitual); no mezclar estilos sin motivo en el mismo módulo.
+
+## Imports solo de tipo
+
+- Usar `import type { … } from '…'` (o `import type X`) cuando el símbolo es **solo tipo**, para claridad y tree-shaking.
+
+## Alineación con Laravel e Inertia
+
+- **No duplicar** a mano la forma de props de página que ya define el backend: reutilizar tipos generados o tipos compartidos que reflejen el contrato real (Inertia `PageProps`, recursos, etc.).
+- Rutas y acciones: tipos y firmas vienen de **Wayfinder** (`@/actions`, `@/routes`); no reinventar URLs ni parámetros en tipos paralelos salvo capas muy delgadas de adaptación documentadas.
+
+## Enumeraciones y literales
+
+- No usar `enum` de TypeScript salvo requisito externo; preferir **uniones de strings literales** o **objetos `as const`** con tipos derivados.
+
+## Exports y barrel
+
+- En `types/index.ts`, reexportar con `export type * from './módulo';` para no mezclar valores y tipos en el barrel.
+- Evitar barrels profundos fuera de `types/`; no crear cadenas de `index.ts` innecesarias.
+
+## Utilidades y genéricos
+
+- Tipos reutilizables (`Pick`, `Omit`, `Partial`, helpers propios) deben vivir junto al dominio que los usa o en un módulo `types/` / `lib/` existente; no duplicar el mismo helper en varios features.
+
+## Qué evitar
+
+- `any` y dobles aserciones (`as unknown as …`) salvo interop puntual y comentada.
+- Tipos que contradigan el runtime (p. ej. campos opcionales en TS cuando el servidor siempre los envía) sin documentar la discrepancia.
+- Copiar pegar grandes bloques de tipos entre archivos en lugar de extraer un tipo compartido.

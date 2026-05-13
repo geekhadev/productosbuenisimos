@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+    productosbuenisimos_db:
+        image: postgres:17
+        platform: linux/amd64
+        container_name: productosbuenisimos_db
+        environment:
+            POSTGRES_DB: productosbuenisimos
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        ports:
+            - '1432:5432'
+    productosbuenisimos_redis:
+        image: redis:6
+        container_name: productosbuenisimos_redis
+        ports:
+            - '1379:6379'
