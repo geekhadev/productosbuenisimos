@@ -2,11 +2,11 @@ export type LandingSectionProps = {
     canRegister: boolean;
 };
 
-export type LandingShowcaseProduct = {
+export type LandingProduct = {
     id: string;
     name: string;
-    subtitle: string;
-    priceLabel: string;
-    imageUrl: string;
-    badge?: string;
+    code: string;
+    sku: string;
+    price: number;
+    description: string | null;
 };

@@ -1,7 +1,11 @@
 import { LandingProductCard } from '@/pages/landing/landing-product-card';
-import { landingShowcaseProducts } from '@/pages/landing/landing-showcase-data';
+import type { LandingProduct } from '@/pages/landing/types';
 
-export function LandingFeaturedProducts() {
+type LandingFeaturedProductsProps = {
+    showcaseProducts: LandingProduct[];
+};
+
+export function LandingFeaturedProducts({ showcaseProducts }: LandingFeaturedProductsProps) {
     return (
         <section
             id="destacados"
@@ -15,13 +19,17 @@ export function LandingFeaturedProducts() {
                     Una selección de lo más pedido: ingredientes honestos, buen precio y envíos
                     pensados para que disfrutes sin complicarte.
                 </p>
-                <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                    {landingShowcaseProducts.map((product) => (
-                        <li key={product.id}>
-                            <LandingProductCard product={product} variant="grid" />
-                        </li>
-                    ))}
-                </ul>
+                {showcaseProducts.length === 0 ? (
+                    <p className="mt-12 text-muted-foreground">Más productos muy pronto.</p>
+                ) : (
+                    <ul className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">
+                        {showcaseProducts.map((product) => (
+                            <li key={product.id} className="min-w-0">
+                                <LandingProductCard product={product} variant="grid" />
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
         </section>
     );
