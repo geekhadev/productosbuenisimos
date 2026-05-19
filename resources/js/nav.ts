@@ -7,6 +7,7 @@ import {
     MapPin,
     Package,
     Share2,
+    Bot,
     ClipboardList,
     ShoppingCart,
     UserRound,
@@ -20,6 +21,7 @@ import { index as systemsIndex } from '@/routes/administration/systems';
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
+import { edit as agentEdit } from '@/routes/sales/agent';
 import { index as customersIndex } from '@/routes/sales/customers';
 import { index as ordersIndex } from '@/routes/sales/orders';
 import { index as countriesIndex } from '@/routes/shared/countries';
@@ -81,6 +83,12 @@ export const mainNavItems: NavItem[] = [
                 href: ordersIndex(),
                 icon: ClipboardList,
                 permission: 'sales.orders.list',
+            },
+            {
+                title: 'Agente de Ventas',
+                href: agentEdit(),
+                icon: Bot,
+                permission: 'sales.agent.list',
             },
         ],
     },

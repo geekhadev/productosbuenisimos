@@ -6,6 +6,8 @@ use App\Ai\Tools\CreateCustomerAddress;
 use App\Ai\Tools\CreateOrder;
 use App\Ai\Tools\GetCustomerByPhone;
 use App\Ai\Tools\GetProducts;
+use App\Models\Company;
+use App\Models\Sales\SalesAgentConfig;
 use Illuminate\Support\Str;
 use Laravel\Ai\Concerns\RemembersConversations;
 
@@ -40,6 +42,26 @@ test('sales agent registers all sales tools with company id', function () {
 
 test('sales agent uses remembers conversations trait', function () {
     expect(class_uses(SalesAgent::class))->toContain(RemembersConversations::class);
+});
+
+test('sales agent respects enabled tools from company config', function () {
+    $company = Company::factory()->create();
+
+    SalesAgentConfig::factory()
+        ->for($company)
+        ->withEnabledTools([
+            SalesAgentConfig::TOOL_GET_PRODUCTS,
+            SalesAgentConfig::TOOL_CREATE_ORDER,
+        ])
+        ->create();
+
+    $tools = SalesAgent::make(companyId: $company->id)->tools();
+    $toolClasses = array_map(fn ($tool) => $tool::class, iterator_to_array($tools));
+
+    expect($toolClasses)->toBe([
+        GetProducts::class,
+        CreateOrder::class,
+    ]);
 });
 
 test('sales agent can start conversation for user', function () {

@@ -107,6 +107,14 @@ class PermissionsSeeder extends Seeder
                         'module_slug' => 'orders',
                         'permissions' => $permissions_crud,
                     ],
+                    [
+                        'module_name' => 'Agente de Ventas',
+                        'module_slug' => 'agent',
+                        'permissions' => [
+                            ['permission_name' => 'Listar Agente de Ventas', 'permission_slug' => 'list'],
+                            ['permission_name' => 'Actualizar Agente de Ventas', 'permission_slug' => 'update'],
+                        ],
+                    ],
                 ],
             ],
         ];
