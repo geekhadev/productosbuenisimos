@@ -2,13 +2,11 @@
 
 namespace App\Actions\Landing;
 
-use App\Models\Company;
 use App\Models\Stock\Product;
+use App\Support\LandingPublicCatalogCompany;
 
 class GetPublicProductsAction
 {
-    private const COMPANY_NAME = 'PRODUCTOS BUENISIMOS SPA';
-
     /**
      * Returns the public product list for the fixed company.
      * Company is resolved server-side; never accept company_id from user input.
@@ -17,13 +15,11 @@ class GetPublicProductsAction
      */
     public function execute(): array
     {
-        $company = Company::query()
-            ->where('name', self::COMPANY_NAME)
-            ->first();
+        $company = LandingPublicCatalogCompany::find();
 
         if ($company === null) {
             return [
-                'name' => self::COMPANY_NAME,
+                'name' => LandingPublicCatalogCompany::NAME,
                 'heroProduct' => null,
                 'showcaseProducts' => [],
             ];

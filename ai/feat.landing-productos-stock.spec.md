@@ -96,7 +96,7 @@ No aplica formulario de usuario en la landing. El servidor debe **defensivamente
 | Tipos           | `resources/js/pages/landing/types.ts` — ajustar props de página y tipo de producto showcase al contrato real |
 | Datos estáticos | `resources/js/pages/landing/landing-showcase-data.ts` — dejar de usar como fuente de verdad o reducir a fallback |
 
-**No** crear: rutas tipo `landing/products/{product}`, controlador de detalle, ni página Inertia de detalle de producto.
+La **ficha pública de detalle** (ruta `/productos/{uuid}`, todos los campos + placeholder) vive en **`ai/feat.landing-producto-detalle.spec.md`** e implementación asociada; el listado de landing enlaza a esa ruta.
 
 ### Seeders
 
@@ -121,4 +121,4 @@ Para pruebas locales y demos: asegurar que `ProductSeeder` (o flujo de seeds) cr
 - **Seguridad:** la query pública no expone productos de otras empresas ni inactivos ni soft-deleted.
 - **Contrato Inertia:** definir un DTO o array mínimo (p. ej. `heroProduct`, `showcaseProducts: []`) para que TypeScript coincida con lo que envía `LandingController`.
 - **Imágenes:** implementación acotada a **un solo placeholder** (p. ej. constante en frontend o `asset()` a un SVG/PNG en `public/`), mismo recurso para hero y tarjetas; no serializar ni inventar `image_url` por producto en esta entrega.
-- **Alcance explícito:** no implementar Wayfinder ni enlaces a rutas de detalle; las tarjetas y el hero no deben navegar a ficha de producto en esta entrega.
+- **Detalle:** enlaces desde hero y vitrina a la ficha pública (`landing.products.show`) según `feat.landing-producto-detalle.spec.md`.

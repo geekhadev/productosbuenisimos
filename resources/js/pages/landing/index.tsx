@@ -22,7 +22,7 @@ export default function LandingIndex({
             <Head title="Productos Buenísimos — Tienda" />
             <LandingHeader canRegister={canRegister} />
             <main>
-                <LandingHero canRegister={canRegister} heroProduct={heroProduct} />
+                <LandingHero heroProduct={heroProduct} />
                 <LandingFeaturedProducts showcaseProducts={showcaseProducts} />
                 <LandingCta canRegister={canRegister} />
             </main>

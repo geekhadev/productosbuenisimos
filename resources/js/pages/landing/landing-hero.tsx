@@ -1,21 +1,18 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatLandingProductPrice } from '@/pages/landing/format-price';
 import { landingProductImageAreaClass } from '@/pages/landing/landing-product-visual';
-import type { LandingProduct, LandingSectionProps } from '@/pages/landing/types';
-import { dashboard, login } from '@/routes';
+import type { LandingProduct } from '@/pages/landing/types';
+import { show as landingProductShow } from '@/routes/landing/products';
 
 const PRODUCT_PLACEHOLDER = '/product-placeholder.svg';
 
-type LandingHeroProps = LandingSectionProps & {
+type LandingHeroProps = {
     heroProduct: LandingProduct | null;
 };
 
-export function LandingHero({ canRegister, heroProduct }: LandingHeroProps) {
-    const { auth } = usePage().props;
-    const isLoggedIn = Boolean(auth.user);
-
+export function LandingHero({ heroProduct }: LandingHeroProps) {
     return (
         <section
             id="inicio"
@@ -35,7 +32,12 @@ export function LandingHero({ canRegister, heroProduct }: LandingHeroProps) {
                                 Tienda online
                             </p>
                             <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl lg:leading-[1.1] xl:text-6xl">
-                                {heroProduct.name}
+                                <Link
+                                    className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                                    href={landingProductShow.url(heroProduct.id)}
+                                >
+                                    {heroProduct.name}
+                                </Link>
                             </h1>
                             {heroProduct.description && (
                                 <p className="mt-4 line-clamp-3 max-w-xl text-base text-muted-foreground sm:text-lg">
@@ -46,27 +48,31 @@ export function LandingHero({ canRegister, heroProduct }: LandingHeroProps) {
                                 {formatLandingProductPrice(heroProduct.price)}
                             </p>
                             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                                <Button size="lg" type="button" variant="default">
-                                    Ver detalles
+                                <Button asChild size="lg" variant="default">
+                                    <Link href={landingProductShow.url(heroProduct.id)}>Ver detalles</Link>
                                 </Button>
-
                             </div>
                         </div>
                         <div className="relative order-1 mx-auto w-full max-w-xl lg:order-2 lg:max-w-none">
-                            <div
-                                className={cn(
-                                    landingProductImageAreaClass,
-                                    'rounded-2xl border border-border/60 shadow-lg',
-                                )}
+                            <Link
+                                className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                                href={landingProductShow.url(heroProduct.id)}
                             >
-                                <img
-                                    src={PRODUCT_PLACEHOLDER}
-                                    alt={heroProduct.name}
-                                    className="size-full object-cover"
-                                    loading="eager"
-                                    decoding="async"
-                                />
-                            </div>
+                                <div
+                                    className={cn(
+                                        landingProductImageAreaClass,
+                                        'rounded-2xl border border-border/60 shadow-lg transition-shadow hover:shadow-xl',
+                                    )}
+                                >
+                                    <img
+                                        src={PRODUCT_PLACEHOLDER}
+                                        alt={heroProduct.name}
+                                        className="size-full object-cover"
+                                        loading="eager"
+                                        decoding="async"
+                                    />
+                                </div>
+                            </Link>
                         </div>
                     </div>
                 )}
