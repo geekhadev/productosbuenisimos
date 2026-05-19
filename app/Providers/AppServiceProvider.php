@@ -10,6 +10,7 @@ use App\Models\Administration\System;
 use App\Models\Company;
 use App\Models\Configuration\Role;
 use App\Models\Sales\Customer;
+use App\Models\Sales\Order;
 use App\Models\Shared\Country;
 use App\Models\Shared\State;
 use App\Models\Stock\Product;
@@ -19,6 +20,7 @@ use App\Policies\Administration\SystemPolicy;
 use App\Policies\Configuration\CompaniesPolicy;
 use App\Policies\Configuration\RolesPolicy;
 use App\Policies\Sales\CustomerPolicy;
+use App\Policies\Sales\OrderPolicy;
 use App\Policies\Shared\CountriesPolicy;
 use App\Policies\Shared\StatesPolicy;
 use App\Policies\Stock\ProductPolicy;
@@ -66,6 +68,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(State::class, StatesPolicy::class);
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(Customer::class, CustomerPolicy::class);
+        Gate::policy(Order::class, OrderPolicy::class);
     }
 
     /**

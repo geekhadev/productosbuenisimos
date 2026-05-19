@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Company;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,7 +45,15 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * @return array{company_selected: array{id: string, name: string}}
+ */
+function withSelectedCompany(Company $company): array
 {
-    // ..
+    return [
+        'company_selected' => [
+            'id' => $company->id,
+            'name' => $company->name,
+        ],
+    ];
 }
