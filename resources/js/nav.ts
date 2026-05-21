@@ -9,6 +9,7 @@ import {
     Share2,
     Bot,
     ClipboardList,
+    Contact,
     ShoppingCart,
     UserRound,
     Users,
@@ -23,6 +24,7 @@ import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
 import { edit as agentEdit } from '@/routes/sales/agent';
 import { index as customersIndex } from '@/routes/sales/customers';
+import { index as leadsIndex } from '@/routes/sales/leads';
 import { index as ordersIndex } from '@/routes/sales/orders';
 import { index as countriesIndex } from '@/routes/shared/countries';
 import { index as statesIndex } from '@/routes/shared/states';
@@ -77,6 +79,12 @@ export const mainNavItems: NavItem[] = [
                 href: customersIndex(),
                 icon: Users,
                 permission: 'sales.customers.list',
+            },
+            {
+                title: 'Leads',
+                href: leadsIndex(),
+                icon: Contact,
+                permission: 'sales.leads.list',
             },
             {
                 title: 'Pedidos',

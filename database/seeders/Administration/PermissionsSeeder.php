@@ -103,6 +103,11 @@ class PermissionsSeeder extends Seeder
                         'permissions' => $permissions_crud,
                     ],
                     [
+                        'module_name' => 'Leads',
+                        'module_slug' => 'leads',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
                         'module_name' => 'Pedidos',
                         'module_slug' => 'orders',
                         'permissions' => $permissions_crud,
