@@ -33,6 +33,8 @@ test('edit page shows default tools and prompt when no config exists', function 
             ->where('usesCustomPrompt', false)
             ->where('can.update', true)
             ->where('prompt', SalesAgentConfig::defaultPrompt())
+            ->where('provider', SalesAgentConfig::defaultProvider())
+            ->where('model', '')
             ->has('tools', count(SalesAgentConfig::TOOL_SLUGS)));
 });
 
@@ -47,6 +49,8 @@ test('update persists agent config for selected company', function () {
                 SalesAgentConfig::TOOL_GET_PRODUCTS,
                 SalesAgentConfig::TOOL_CREATE_ORDER,
             ],
+            'provider' => SalesAgentConfig::DEFAULT_PROVIDER,
+            'model' => 'gpt-4o',
             'prompt' => 'Instrucciones personalizadas.',
             'use_default_prompt' => false,
         ])
@@ -59,7 +63,9 @@ test('update persists agent config for selected company', function () {
             SalesAgentConfig::TOOL_GET_PRODUCTS,
             SalesAgentConfig::TOOL_CREATE_ORDER,
         ])
-        ->and($config->prompt)->toBe('Instrucciones personalizadas.');
+        ->and($config->prompt)->toBe('Instrucciones personalizadas.')
+        ->and($config->provider)->toBe(SalesAgentConfig::DEFAULT_PROVIDER)
+        ->and($config->model)->toBe('gpt-4o');
 });
 
 test('update with use default prompt clears stored prompt', function () {
@@ -72,6 +78,8 @@ test('update with use default prompt clears stored prompt', function () {
         ->withSession(withSelectedCompany($company))
         ->put(route('sales.agent.update'), [
             'enabled_tools' => SalesAgentConfig::defaultEnabledTools(),
+            'provider' => SalesAgentConfig::DEFAULT_PROVIDER,
+            'model' => '',
             'prompt' => 'ignored',
             'use_default_prompt' => true,
         ])
@@ -90,6 +98,7 @@ test('update rejects disabling all tools', function () {
         ->withSession(withSelectedCompany($company))
         ->put(route('sales.agent.update'), [
             'enabled_tools' => [],
+            'provider' => SalesAgentConfig::DEFAULT_PROVIDER,
             'use_default_prompt' => true,
         ])
         ->assertSessionHasErrors('enabled_tools');
@@ -114,11 +123,29 @@ test('sales agent uses company config for tools and instructions', function () {
         ->and($tools[0])->toBeInstanceOf(GetProducts::class);
 });
 
+test('sales agent uses provider and model from company config', function () {
+    $company = Company::factory()->create();
+
+    SalesAgentConfig::factory()
+        ->for($company)
+        ->create([
+            'provider' => SalesAgentConfig::DEFAULT_PROVIDER,
+            'model' => 'gpt-4.1-mini',
+        ]);
+
+    $agent = SalesAgent::make(companyId: $company->id);
+
+    expect($agent->provider())->toBe(SalesAgentConfig::DEFAULT_PROVIDER)
+        ->and($agent->model())->toBe('gpt-4.1-mini');
+});
+
 test('sales agent falls back to defaults without config', function () {
     $company = Company::factory()->create();
     $agent = SalesAgent::make(companyId: $company->id);
 
-    expect($agent->instructions())->toContain('asistente de ventas');
+    expect($agent->instructions())->toContain('asistente de ventas')
+        ->and($agent->provider())->toBe(SalesAgentConfig::defaultProvider())
+        ->and($agent->model())->toBeNull();
 
     $toolClasses = array_map(fn ($tool) => $tool::class, iterator_to_array($agent->tools()));
 

@@ -21,6 +21,8 @@ class SalesAgentConfigFactory extends Factory
         return [
             'company_id' => Company::factory(),
             'enabled_tools' => SalesAgentConfig::defaultEnabledTools(),
+            'provider' => SalesAgentConfig::defaultProvider(),
+            'model' => null,
             'prompt' => null,
         ];
     }

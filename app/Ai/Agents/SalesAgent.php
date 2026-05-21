@@ -21,6 +21,21 @@ class SalesAgent implements Agent, Conversational, HasTools
 
     public function __construct(private readonly string $companyId) {}
 
+    public function provider(): string
+    {
+        $config = SalesAgentConfig::forCompany($this->companyId);
+
+        return $config?->provider ?? SalesAgentConfig::defaultProvider();
+    }
+
+    public function model(): ?string
+    {
+        $config = SalesAgentConfig::forCompany($this->companyId);
+        $model = $config?->model;
+
+        return filled($model) ? $model : null;
+    }
+
     public function instructions(): Stringable|string
     {
         $config = SalesAgentConfig::forCompany($this->companyId);

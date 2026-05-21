@@ -7,16 +7,18 @@ use App\Models\Sales\SalesAgentConfig;
 class UpdateAgentConfig
 {
     /**
-     * @param  list<string>  $enabledTools
+     * @param  array{
+     *     enabled_tools: list<string>,
+     *     provider: string,
+     *     model: ?string,
+     *     prompt: ?string,
+     * }  $attributes
      */
-    public function execute(string $companyId, array $enabledTools, ?string $prompt): SalesAgentConfig
+    public function execute(string $companyId, array $attributes): SalesAgentConfig
     {
         $config = SalesAgentConfig::query()->updateOrCreate(
             ['company_id' => $companyId],
-            [
-                'enabled_tools' => $enabledTools,
-                'prompt' => $prompt,
-            ],
+            $attributes,
         );
 
         SalesAgentConfig::forgetCacheForCompany($companyId);

@@ -10,6 +10,8 @@ import { edit as agentEdit, update as agentUpdate } from '@/routes/sales/agent';
 function buildFormDefaults(props: AgentConfigEditPageProps): AgentConfigFormData {
     return {
         enabled_tools: props.enabledTools,
+        provider: props.provider,
+        model: props.model,
         prompt: props.prompt,
         use_default_prompt: !props.usesCustomPrompt,
     };
@@ -31,6 +33,8 @@ export function useAgentConfigForm(props: AgentConfigEditPageProps) {
     useLayoutEffect(() => {
         setLayoutProps({ breadcrumbs });
     }, [breadcrumbs]);
+
+    const enabledToolsCount = form.data.enabled_tools.length;
 
     const isToolEnabled = useCallback(
         (slug: string) => form.data.enabled_tools.includes(slug),
@@ -93,6 +97,7 @@ export function useAgentConfigForm(props: AgentConfigEditPageProps) {
     return {
         form,
         submit,
+        enabledToolsCount,
         isToolEnabled,
         toggleTool,
         onPromptChange,

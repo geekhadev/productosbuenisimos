@@ -33,6 +33,9 @@ class AgentConfigController extends Controller
         return Inertia::render('sales/agent/edit', [
             'tools' => SalesAgentConfig::toolsForFrontend(),
             'enabledTools' => $config?->enabled_tools ?? SalesAgentConfig::defaultEnabledTools(),
+            'provider' => $config?->provider ?? SalesAgentConfig::defaultProvider(),
+            'model' => $config?->model ?? '',
+            'providers' => SalesAgentConfig::providersForFrontend(),
             'prompt' => filled($config?->prompt)
                 ? $config->prompt
                 : SalesAgentConfig::defaultPrompt(),
@@ -56,8 +59,7 @@ class AgentConfigController extends Controller
         $config = SalesAgentConfig::forCompany($companyId);
         $this->authorize('update', $config ?? SalesAgentConfig::class);
 
-        $payload = $request->configPayload();
-        $action->execute($companyId, $payload['enabled_tools'], $payload['prompt']);
+        $action->execute($companyId, $request->configPayload());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Configuración del agente guardada.']);
 
