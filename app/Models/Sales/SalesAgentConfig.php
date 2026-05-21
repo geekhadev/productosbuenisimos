@@ -14,12 +14,23 @@ use Illuminate\Support\Facades\Cache;
 #[Fillable([
     'company_id',
     'enabled_tools',
+    'provider',
+    'model',
     'prompt',
 ])]
 class SalesAgentConfig extends Model
 {
     /** @use HasFactory<SalesAgentConfigFactory> */
     use HasFactory, HasUuids;
+
+    public const DEFAULT_PROVIDER = 'openai';
+
+    /**
+     * @var list<string>
+     */
+    public const ALLOWED_PROVIDERS = [
+        self::DEFAULT_PROVIDER,
+    ];
 
     public const TOOL_GET_PRODUCTS = 'get_products';
 
@@ -90,11 +101,30 @@ class SalesAgentConfig extends Model
 
     public static function forCompany(string $companyId): ?static
     {
-        return Cache::remember(
-            self::cacheKey($companyId),
+        $key = self::cacheKey($companyId);
+        $cached = Cache::get($key);
+
+        if ($cached instanceof static) {
+            return $cached;
+        }
+
+        if ($cached !== null) {
+            Cache::forget($key);
+        }
+
+        $configId = Cache::remember(
+            $key,
             60,
-            fn (): ?static => static::query()->where('company_id', $companyId)->first(),
+            fn (): ?string => static::query()
+                ->where('company_id', $companyId)
+                ->value('id'),
         );
+
+        if ($configId === null) {
+            return null;
+        }
+
+        return static::query()->find($configId);
     }
 
     public static function forgetCacheForCompany(string $companyId): void
@@ -108,6 +138,26 @@ class SalesAgentConfig extends Model
     public static function defaultEnabledTools(): array
     {
         return self::TOOL_SLUGS;
+    }
+
+    public static function defaultProvider(): string
+    {
+        return self::DEFAULT_PROVIDER;
+    }
+
+    public static function defaultModel(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @return list<array{value: string, label: string}>
+     */
+    public static function providersForFrontend(): array
+    {
+        return [
+            ['value' => self::DEFAULT_PROVIDER, 'label' => 'OpenAI'],
+        ];
     }
 
     public static function defaultPrompt(): string
