@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { ChatbotWidget } from '@/components/chatbot/chatbot-widget';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatLandingDimension } from '@/pages/landing/format-dimension';
@@ -110,6 +111,15 @@ export default function ProductShow({ canRegister = true, product }: ProductShow
                 </div>
             </main>
             <LandingFooter />
+            <ChatbotWidget
+                product={{
+                    id: product.id,
+                    name: product.name,
+                    code: product.code,
+                    sku: product.sku,
+                    price: priceToNumber(product.price),
+                }}
+            />
         </div>
     );
 }

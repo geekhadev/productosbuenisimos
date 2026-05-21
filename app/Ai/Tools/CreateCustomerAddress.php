@@ -48,16 +48,22 @@ class CreateCustomerAddress implements Tool
                 ->required(),
             'country_name' => $schema
                 ->string()
-                ->description('Nombre del país (máx. 120 caracteres). Opcional.')
-                ->max(120),
+                ->description('Nombre del país (máx. 120 caracteres). Envía null si no aplica.')
+                ->max(120)
+                ->nullable()
+                ->required(),
             'state_name' => $schema
                 ->string()
-                ->description('Nombre del estado o provincia (máx. 120 caracteres). Opcional.')
-                ->max(120),
+                ->description('Nombre del estado o provincia (máx. 120 caracteres). Envía null si no aplica.')
+                ->max(120)
+                ->nullable()
+                ->required(),
             'address' => $schema
                 ->string()
-                ->description('Dirección completa: calle, número, colonia, etc. (máx. 2000 caracteres). Opcional.')
-                ->max(2000),
+                ->description('Dirección completa: calle, número, colonia, etc. (máx. 2000 caracteres). Envía null si no aplica.')
+                ->max(2000)
+                ->nullable()
+                ->required(),
         ];
     }
 }

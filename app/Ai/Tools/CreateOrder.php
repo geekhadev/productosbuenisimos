@@ -53,12 +53,14 @@ class CreateOrder implements Tool
                 ->items($schema->object([
                     'product_id' => $schema->string()->description('UUID del producto.')->required(),
                     'quantity' => $schema->integer()->description('Cantidad del producto. Mínimo 1.')->min(1)->required(),
-                    'unit_price' => $schema->number()->description('Precio unitario. Si se omite se usa el precio vigente del producto.'),
+                    'unit_price' => $schema->number()->description('Precio unitario. Si se omite se usa el precio vigente del producto.')->nullable()->required(),
                 ])),
             'name' => $schema
                 ->string()
-                ->description('Nombre del pedido. Si se omite se genera automáticamente como "Pedido-{YYYYMMDD-HHmmss}".')
-                ->max(255),
+                ->description('Nombre del pedido. Envía null para generar automáticamente como "Pedido-{YYYYMMDD-HHmmss}".')
+                ->max(255)
+                ->nullable()
+                ->required(),
         ];
     }
 }

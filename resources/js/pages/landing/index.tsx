@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { ChatbotWidget } from '@/components/chatbot/chatbot-widget';
 import { LandingCta } from '@/pages/landing/landing-cta';
 import { LandingFeaturedProducts } from '@/pages/landing/landing-featured-products';
 import { LandingFooter } from '@/pages/landing/landing-footer';
@@ -27,6 +28,7 @@ export default function LandingIndex({
                 <LandingCta canRegister={canRegister} />
             </main>
             <LandingFooter />
+            <ChatbotWidget />
         </div>
     );
 }

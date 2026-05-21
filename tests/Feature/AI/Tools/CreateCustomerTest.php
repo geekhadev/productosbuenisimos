@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\Sales\Customer;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\Support\Str;
+use Laravel\Ai\ObjectSchema;
 use Laravel\Ai\Tools\Request;
 
 test('create customer action creates customer without addresses', function () {
@@ -132,4 +133,17 @@ test('create customer tool exposes expected name and schema', function () {
 
     expect($tool->name())->toBe('create_customer')
         ->and($schema)->toHaveKeys(['full_name', 'phone', 'addresses']);
+});
+
+test('create customer tool address items satisfy openai strict schema', function () {
+    $tool = new CreateCustomer((string) Str::uuid());
+    $serialized = (new ObjectSchema($tool->schema(new JsonSchemaTypeFactory)))->toSchema();
+
+    $addressItem = $serialized['properties']['addresses']['items'];
+
+    expect($serialized['required'])->toContain('addresses')
+        ->and($serialized['properties']['addresses']['type'])->toBe(['array', 'null'])
+        ->and($addressItem['required'] ?? [])
+        ->toBe(['country_name', 'state_name', 'address'])
+        ->and($addressItem['properties']['country_name']['type'])->toBe(['string', 'null']);
 });
