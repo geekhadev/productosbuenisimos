@@ -1,17 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { ChatbotWidget } from '@/components/chatbot/chatbot-widget';
+import { ProductImageGallery } from '@/components/custom/product-image-gallery';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { formatLandingDimension } from '@/pages/landing/format-dimension';
 import { formatLandingProductPrice } from '@/pages/landing/format-price';
 import { LandingFooter } from '@/pages/landing/landing-footer';
 import { LandingHeader } from '@/pages/landing/landing-header';
-import { landingProductImageAreaClass } from '@/pages/landing/landing-product-visual';
 import type { PublicLandingProductDetail } from '@/pages/landing/types';
 import { home } from '@/routes';
-
-const PRODUCT_PLACEHOLDER = '/product-placeholder.svg';
 
 function priceToNumber(price: string | number): number {
     return typeof price === 'string' ? Number.parseFloat(price) : price;
@@ -65,20 +62,11 @@ export default function ProductShow({ canRegister = true, product }: ProductShow
                         </Link>
                     </Button>
                     <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
-                        <div
-                            className={cn(
-                                landingProductImageAreaClass,
-                                'mx-auto w-full max-w-xl overflow-hidden rounded-2xl border border-border/60 shadow-lg lg:max-w-none',
-                            )}
-                        >
-                            <img
-                                src={PRODUCT_PLACEHOLDER}
-                                alt=""
-                                className="size-full object-cover"
-                                loading="eager"
-                                decoding="async"
-                            />
-                        </div>
+                        <ProductImageGallery
+                            className="mx-auto w-full max-w-xl lg:max-w-none"
+                            images={product.images}
+                            productName={product.name}
+                        />
                         <div className="min-w-0">
                             <p className="text-sm font-medium uppercase tracking-wide text-primary">
                                 Producto

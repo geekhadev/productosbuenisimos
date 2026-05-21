@@ -1,4 +1,5 @@
 import type { TabledataListStandardDraft } from '@/components/custom/tabledata';
+import type { ProductMediaItem } from '@/lib/media-fetch';
 import type { PaginatedListFilters } from '@/types/list-filters';
 
 export type ProductRow = {
@@ -70,6 +71,15 @@ export type ProductFormData = {
     is_active: boolean;
 };
 
+export type ProductMediaPayload = {
+    images: ProductMediaItem[];
+    video: ProductMediaItem | null;
+};
+
 export type ProductsFormPageProps = {
     product: ProductFormRecord | null;
+    media: ProductMediaPayload;
+    can: {
+        updateMedia: boolean;
+    };
 };

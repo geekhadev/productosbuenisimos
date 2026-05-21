@@ -2,11 +2,12 @@ import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatLandingProductPrice } from '@/pages/landing/format-price';
-import { landingProductImageAreaClass } from '@/pages/landing/landing-product-visual';
+import {
+    landingProductImageAreaClass,
+    landingProductImageSrc,
+} from '@/pages/landing/landing-product-visual';
 import type { LandingProduct } from '@/pages/landing/types';
 import { show as landingProductShow } from '@/routes/landing/products';
-
-const PRODUCT_PLACEHOLDER = '/product-placeholder.svg';
 
 type LandingHeroProps = {
     heroProduct: LandingProduct | null;
@@ -65,7 +66,7 @@ export function LandingHero({ heroProduct }: LandingHeroProps) {
                                     )}
                                 >
                                     <img
-                                        src={PRODUCT_PLACEHOLDER}
+                                        src={landingProductImageSrc(heroProduct.thumbnail_url)}
                                         alt={heroProduct.name}
                                         className="size-full object-cover"
                                         loading="eager"

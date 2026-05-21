@@ -2,6 +2,7 @@
 
 namespace App\Models\Stock;
 
+use App\Enums\Stock\ProductMediaType;
 use App\Models\Company;
 use App\Support\SelectedCompanySession;
 use Database\Factories\Stock\ProductFactory;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 
@@ -57,6 +59,28 @@ class Product extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    /**
+     * @return HasMany<ProductMedia, $this>
+     */
+    public function media(): HasMany
+    {
+        return $this->hasMany(ProductMedia::class, 'product_id');
+    }
+
+    /**
+     * @param  Builder<$this>  $query
+     * @return Builder<$this>
+     */
+    public function scopeWithLandingImages(Builder $query): Builder
+    {
+        return $query->with(['media' => function ($relation): void {
+            $relation
+                ->where('type', ProductMediaType::Image->value)
+                ->orderBy('sort_order')
+                ->orderBy('created_at');
+        }]);
     }
 
     /**

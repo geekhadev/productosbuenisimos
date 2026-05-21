@@ -14,6 +14,7 @@ use App\Http\Requests\Stock\UpdateProductRequest;
 use App\Models\Stock\Product;
 use App\Models\User;
 use App\Support\SelectedCompanySession;
+use App\Support\Stock\ProductMediaPayload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -61,6 +62,10 @@ class ProductsController extends Controller
 
         return Inertia::render('stock/products/form', [
             'product' => null,
+            'media' => ['images' => [], 'video' => null],
+            'can' => [
+                'updateMedia' => false,
+            ],
         ]);
     }
 
@@ -87,8 +92,14 @@ class ProductsController extends Controller
     {
         $this->authorize('update', $product);
 
+        $product->load('media');
+
         return Inertia::render('stock/products/form', [
             'product' => $this->productFormProps($product),
+            'media' => ProductMediaPayload::forProduct($product),
+            'can' => [
+                'updateMedia' => $request->user()?->can('update', $product) ?? false,
+            ],
         ]);
     }
 
@@ -151,6 +162,7 @@ class ProductsController extends Controller
             'weight' => (string) $product->weight,
             'minimum_stock' => $product->minimum_stock,
             'price' => (string) $product->price,
+            'description' => $product->description,
             'is_active' => $product->is_active,
         ];
     }

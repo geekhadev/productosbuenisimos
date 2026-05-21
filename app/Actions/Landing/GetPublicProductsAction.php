@@ -3,6 +3,7 @@
 namespace App\Actions\Landing;
 
 use App\Models\Stock\Product;
+use App\Support\Landing\PublicLandingProductSerializer;
 use App\Support\LandingPublicCatalogCompany;
 
 class GetPublicProductsAction
@@ -28,13 +29,18 @@ class GetPublicProductsAction
         $products = Product::query()
             ->where('company_id', $company->id)
             ->where('is_active', true)
+            ->withLandingImages()
             ->orderBy('created_at', 'asc')
             ->get(['id', 'name', 'code', 'sku', 'price', 'description']);
 
+        $serialized = $products->map(
+            fn (Product $product): array => PublicLandingProductSerializer::forList($product),
+        );
+
         return [
             'name' => $company->name,
-            'heroProduct' => $products->first()?->toArray(),
-            'showcaseProducts' => $products->skip(1)->values()->toArray(),
+            'heroProduct' => $serialized->first(),
+            'showcaseProducts' => $serialized->skip(1)->values()->all(),
         ];
     }
 }

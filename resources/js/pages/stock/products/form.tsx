@@ -4,15 +4,39 @@ import { FormLinkButton } from '@/components/custom/form-link-button';
 import { FormSubmitButton } from '@/components/custom/form-submit-button';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
+import {
+    ProductMediaUploader,
+    ProductMediaUploaderPending,
+} from '@/components/custom/product-media-uploader';
+import {
+    ProductVideoUploader,
+    ProductVideoUploaderPending,
+} from '@/components/custom/product-video-uploader';
 import InputError from '@/components/input-error';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useProductForm } from '@/pages/stock/products/hooks/use-product-form';
+import { useProductMedia } from '@/pages/stock/products/hooks/use-product-media';
 import type { ProductsFormPageProps } from '@/pages/stock/products/types';
 import { index as productsIndex } from '@/routes/stock/products';
 
 function ProductForm(props: ProductsFormPageProps) {
-    const { form, submit, headTitle } = useProductForm(props);
+    const { form, submit, headTitle, isEdit } = useProductForm(props);
+    const productId = props.product?.id;
+    const editable = props.can.updateMedia && (props.product?.is_active ?? false);
+
+    const {
+        media,
+        error: mediaError,
+        uploadingImages,
+        uploadingVideo,
+        reordering,
+        uploadImages,
+        reorderImages,
+        deleteImage,
+        uploadVideo,
+        deleteVideo,
+    } = useProductMedia(props.media);
 
     return (
         <>
@@ -189,6 +213,44 @@ function ProductForm(props: ProductsFormPageProps) {
                         </div>
                     </div>
                     <InputError message={form.errors.is_active} />
+
+                    {isEdit && productId != null ? (
+                        <section className="space-y-8 rounded-lg border border-border p-4">
+                            <div>
+                                <h2 className="text-xl font-semibold tracking-tight">Medios</h2>
+                                <p className="text-muted-foreground mt-1 text-sm">
+                                    Las imágenes y el video se guardan al instante, sin esperar al
+                                    botón Guardar del formulario.
+                                </p>
+                            </div>
+
+                            <ProductMediaUploader
+                                images={media.images}
+                                editable={editable}
+                                onUpload={(files) => void uploadImages(productId, files)}
+                                onReorder={(order) => void reorderImages(productId, order)}
+                                onDelete={(mediaId) => void deleteImage(productId, mediaId)}
+                            />
+                            {uploadingImages ? (
+                                <ProductMediaUploaderPending label="Subiendo imágenes…" />
+                            ) : null}
+                            {reordering ? (
+                                <ProductMediaUploaderPending label="Guardando orden…" />
+                            ) : null}
+
+                            <ProductVideoUploader
+                                video={media.video}
+                                editable={editable}
+                                onUpload={(file) => void uploadVideo(productId, file)}
+                                onDelete={() => void deleteVideo(productId)}
+                            />
+                            {uploadingVideo ? (
+                                <ProductVideoUploaderPending label="Subiendo video…" />
+                            ) : null}
+
+                            <InputError message={mediaError ?? undefined} />
+                        </section>
+                    ) : null}
 
                     <div className="flex flex-wrap gap-2">
                         <FormSubmitButton

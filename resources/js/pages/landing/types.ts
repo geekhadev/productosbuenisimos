@@ -2,6 +2,12 @@ export type LandingSectionProps = {
     canRegister: boolean;
 };
 
+export type LandingProductImage = {
+    id: string;
+    url: string;
+    alt: string;
+};
+
 export type LandingProduct = {
     id: string;
     name: string;
@@ -9,6 +15,7 @@ export type LandingProduct = {
     sku: string;
     price: number;
     description: string | null;
+    thumbnail_url: string;
 };
 
 /** Ficha pública (Inertia): decimales pueden llegar como string desde Laravel. */
@@ -25,4 +32,6 @@ export type PublicLandingProductDetail = {
     weight: string | number;
     minimum_stock: number;
     price: string | number;
+    thumbnail_url: string;
+    images: LandingProductImage[];
 };

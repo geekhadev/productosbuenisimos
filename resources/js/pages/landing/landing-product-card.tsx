@@ -2,11 +2,12 @@ import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatLandingProductPrice } from '@/pages/landing/format-price';
-import { landingProductImageAreaClass } from '@/pages/landing/landing-product-visual';
+import {
+    landingProductImageAreaClass,
+    landingProductImageSrc,
+} from '@/pages/landing/landing-product-visual';
 import type { LandingProduct } from '@/pages/landing/types';
 import { show as landingProductShow } from '@/routes/landing/products';
-
-const PRODUCT_PLACEHOLDER = '/product-placeholder.svg';
 
 type LandingProductCardProps = {
     product: LandingProduct;
@@ -29,7 +30,7 @@ export function LandingProductCard({ product, variant }: LandingProductCardProps
             >
                 <div className={cn(landingProductImageAreaClass, 'rounded-t-2xl')}>
                     <img
-                        src={PRODUCT_PLACEHOLDER}
+                        src={landingProductImageSrc(product.thumbnail_url)}
                         alt={product.name}
                         className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                         loading={isHero ? 'eager' : 'lazy'}

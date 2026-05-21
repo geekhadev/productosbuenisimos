@@ -3,6 +3,7 @@
 namespace App\Actions\Landing;
 
 use App\Models\Stock\Product;
+use App\Support\Landing\PublicLandingProductSerializer;
 use App\Support\LandingPublicCatalogCompany;
 
 class ShowPublicProductAction
@@ -22,25 +23,13 @@ class ShowPublicProductAction
             ->where('company_id', $company->id)
             ->where('id', $productId)
             ->where('is_active', true)
+            ->withLandingImages()
             ->first();
 
         if ($product === null) {
             return null;
         }
 
-        return [
-            'id' => $product->id,
-            'name' => $product->name,
-            'code' => $product->code,
-            'sku' => $product->sku,
-            'description' => $product->description,
-            'width' => $product->width,
-            'length' => $product->length,
-            'height' => $product->height,
-            'volume' => $product->volume,
-            'weight' => $product->weight,
-            'minimum_stock' => $product->minimum_stock,
-            'price' => $product->price,
-        ];
+        return PublicLandingProductSerializer::forDetail($product);
     }
 }
