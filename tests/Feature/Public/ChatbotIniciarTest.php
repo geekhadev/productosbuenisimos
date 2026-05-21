@@ -2,9 +2,12 @@
 
 use App\Enums\ChatbotMessageRole;
 use App\Enums\ChatbotSource;
+use App\Enums\Sales\LeadSource;
+use App\Enums\Sales\LeadStatus;
 use App\Models\Company;
 use App\Models\Public\ChatbotConversation;
 use App\Models\Public\ChatbotMessage;
+use App\Models\Sales\Lead;
 use App\Support\ChatbotCompany;
 use App\Support\ChatbotPhone;
 use Illuminate\Support\Str;
@@ -32,6 +35,41 @@ test('new phone with web source creates active conversation with is_new true', f
     expect($conversation->phone)->toBe(ChatbotPhone::normalize('+56912345678'))
         ->and($conversation->source)->toBe(ChatbotSource::Web)
         ->and($conversation->is_active)->toBeTrue();
+
+    $lead = Lead::query()
+        ->where('company_id', ChatbotCompany::findOrFail()->id)
+        ->where('phone', $conversation->phone)
+        ->first();
+
+    expect($lead)->not->toBeNull()
+        ->and($lead->source->value)->toBe('web')
+        ->and($lead->status)->toBe(LeadStatus::Nuevo);
+});
+
+test('resuming active conversation ensures lead exists without duplicating', function () {
+    $company = ChatbotCompany::findOrFail();
+    $phone = '912345678';
+    $normalized = ChatbotPhone::normalize($phone);
+
+    Lead::factory()->for($company)->create([
+        'phone' => $normalized,
+        'source' => LeadSource::Web,
+    ]);
+
+    $conversation = ChatbotConversation::factory()
+        ->for($company)
+        ->create([
+            'phone' => $normalized,
+            'source' => ChatbotSource::Web,
+            'is_active' => true,
+        ]);
+
+    $this->postJson(route('chatbot.iniciar'), [
+        'phone' => $phone,
+        'source' => 'web',
+    ])->assertSuccessful();
+
+    expect(Lead::query()->where('company_id', $company->id)->where('phone', $normalized)->count())->toBe(1);
 });
 
 test('same phone returns same conversation id and message history', function () {

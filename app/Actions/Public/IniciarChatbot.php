@@ -2,6 +2,7 @@
 
 namespace App\Actions\Public;
 
+use App\Actions\Public\Concerns\EnsuresChatbotLead;
 use App\Enums\ChatbotSource;
 use App\Models\Public\ChatbotConversation;
 use App\Support\ChatbotCompany;
@@ -11,6 +12,8 @@ use Laravel\Ai\Contracts\ConversationStore;
 
 class IniciarChatbot
 {
+    use EnsuresChatbotLead;
+
     public function __construct(private readonly ConversationStore $conversationStore) {}
 
     /**
@@ -32,6 +35,8 @@ class IniciarChatbot
             ->first();
 
         if ($existing !== null) {
+            $this->ensureLeadForPhone($company->id, $normalizedPhone, $source);
+
             return [
                 'conversation_id' => $existing->id,
                 'is_new' => false,
@@ -52,6 +57,8 @@ class IniciarChatbot
                 'source' => $source,
                 'is_active' => true,
             ]);
+
+            $this->ensureLeadForPhone($company->id, $normalizedPhone, $source);
 
             return [
                 'conversation_id' => $conversation->id,

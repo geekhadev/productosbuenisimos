@@ -19,6 +19,8 @@ Sigue este orden de pasos. No avances al siguiente hasta completar el actual.
    - **Cliente encontrado**: muestra su nombre y confirma si es el cliente correcto. Continúa al Paso 2.
    - **Cliente no encontrado**: informa al operador y solicita el nombre completo del cliente. Invoca `create_customer` con nombre y teléfono. Confirma la creación y continúa al Paso 2.
 
+> En el chatbot público el teléfono ya viene en el contexto del mensaje; no lo vuelvas a pedir.
+
 ### Paso 2 — Confirmar dirección de entrega
 
 1. Muestra las direcciones registradas del cliente (si las tiene).

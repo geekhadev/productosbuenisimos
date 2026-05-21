@@ -2,6 +2,7 @@
 
 namespace App\Actions\Public;
 
+use App\Actions\Public\Concerns\EnsuresChatbotLead;
 use App\Enums\ChatbotSource;
 use App\Models\Public\ChatbotConversation;
 use App\Support\ChatbotCompany;
@@ -11,6 +12,8 @@ use Laravel\Ai\Contracts\ConversationStore;
 
 class NuevaConversacionChatbot
 {
+    use EnsuresChatbotLead;
+
     public function __construct(private readonly ConversationStore $conversationStore) {}
 
     /**
@@ -45,6 +48,8 @@ class NuevaConversacionChatbot
                 'source' => $source,
                 'is_active' => true,
             ]);
+
+            $this->ensureLeadForPhone($current->company_id, $current->phone, $source);
 
             return [
                 'conversation_id' => $conversation->id,

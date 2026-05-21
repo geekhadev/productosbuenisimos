@@ -1,8 +1,10 @@
 <?php
 
 use App\Enums\ChatbotSource;
+use App\Enums\Sales\LeadStatus;
 use App\Models\Company;
 use App\Models\Public\ChatbotConversation;
+use App\Models\Sales\Lead;
 use App\Support\ChatbotCompany;
 
 beforeEach(function () {
@@ -36,6 +38,14 @@ test('active conversation is deactivated and new conversation is created', funct
     expect($newId)->not->toBe($current->id)
         ->and($current->fresh()->is_active)->toBeFalse()
         ->and(ChatbotConversation::query()->findOrFail($newId)->is_active)->toBeTrue();
+
+    $lead = Lead::query()
+        ->where('company_id', $company->id)
+        ->where('phone', $current->phone)
+        ->first();
+
+    expect($lead)->not->toBeNull()
+        ->and($lead->status)->toBe(LeadStatus::Nuevo);
 });
 
 test('inactive conversation returns 422', function () {
