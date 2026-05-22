@@ -10,6 +10,7 @@ import {
     Bot,
     ClipboardList,
     Contact,
+    MessageSquareText,
     ShoppingCart,
     UserRound,
     Users,
@@ -23,6 +24,7 @@ import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
 import { edit as agentEdit } from '@/routes/sales/agent';
+import { index as conversationsIndex } from '@/routes/sales/conversations';
 import { index as customersIndex } from '@/routes/sales/customers';
 import { index as leadsIndex } from '@/routes/sales/leads';
 import { index as ordersIndex } from '@/routes/sales/orders';
@@ -91,6 +93,12 @@ export const mainNavItems: NavItem[] = [
                 href: ordersIndex(),
                 icon: ClipboardList,
                 permission: 'sales.orders.list',
+            },
+            {
+                title: 'Conversaciones',
+                href: conversationsIndex(),
+                icon: MessageSquareText,
+                permission: 'sales.conversations.list',
             },
             {
                 title: 'Agente de Ventas',

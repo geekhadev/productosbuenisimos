@@ -120,6 +120,13 @@ class PermissionsSeeder extends Seeder
                             ['permission_name' => 'Actualizar Agente de Ventas', 'permission_slug' => 'update'],
                         ],
                     ],
+                    [
+                        'module_name' => 'Conversaciones',
+                        'module_slug' => 'conversations',
+                        'permissions' => [
+                            ['permission_name' => 'Listar conversaciones', 'permission_slug' => 'list'],
+                        ],
+                    ],
                 ],
             ],
         ];
