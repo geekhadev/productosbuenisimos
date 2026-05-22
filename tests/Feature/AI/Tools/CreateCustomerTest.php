@@ -2,8 +2,10 @@
 
 use App\Actions\AI\Tools\CreateCustomerAction;
 use App\Ai\Tools\CreateCustomer;
+use App\Enums\Sales\LeadStatus;
 use App\Models\Company;
 use App\Models\Sales\Customer;
+use App\Models\Sales\Lead;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\Support\Str;
 use Laravel\Ai\ObjectSchema;
@@ -79,6 +81,86 @@ test('create customer action allows reusing phone from soft deleted customer', f
     expect($result)->not->toHaveKey('error')
         ->and($result['full_name'])->toBe('Nuevo Cliente')
         ->and($result['phone'])->toBe('555-1234');
+});
+
+test('create customer action associates active leads with same phone in company', function () {
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $phone = '555-1234';
+
+    $lead = Lead::factory()->for($company)->create([
+        'phone' => $phone,
+        'status' => LeadStatus::Nuevo,
+        'customer_id' => null,
+    ]);
+
+    Lead::factory()->for($otherCompany)->create([
+        'phone' => $phone,
+        'status' => LeadStatus::Nuevo,
+        'customer_id' => null,
+    ]);
+
+    $result = (new CreateCustomerAction)->execute($company->id, [
+        'full_name' => 'Juan Pérez',
+        'phone' => $phone,
+    ]);
+
+    expect($result)->not->toHaveKey('error');
+
+    $customer = Customer::forCompany($company->id)->where('phone', $phone)->first();
+
+    expect($lead->fresh())
+        ->status->toBe(LeadStatus::Convertido)
+        ->customer_id->toBe($customer->id);
+
+    $otherLead = Lead::forCompany($otherCompany->id)->where('phone', $phone)->first();
+    expect($otherLead->customer_id)->toBeNull()
+        ->and($otherLead->status)->toBe(LeadStatus::Nuevo);
+});
+
+test('create customer action associates all unlinked leads sharing phone in company', function () {
+    $company = Company::factory()->create();
+    $phone = '555-7777';
+
+    $leadA = Lead::factory()->for($company)->create(['phone' => $phone, 'customer_id' => null]);
+    $leadB = Lead::factory()->for($company)->create(['phone' => $phone, 'customer_id' => null]);
+
+    (new CreateCustomerAction)->execute($company->id, [
+        'full_name' => 'Cliente',
+        'phone' => $phone,
+    ]);
+
+    $customer = Customer::forCompany($company->id)->where('phone', $phone)->first();
+
+    expect($leadA->fresh()->customer_id)->toBe($customer->id)
+        ->and($leadA->fresh()->status)->toBe(LeadStatus::Convertido)
+        ->and($leadB->fresh()->customer_id)->toBe($customer->id)
+        ->and($leadB->fresh()->status)->toBe(LeadStatus::Convertido);
+});
+
+test('create customer action does not overwrite leads already linked to a customer', function () {
+    $company = Company::factory()->create();
+    $phone = '555-8888';
+    $existingCustomer = Customer::factory()->for($company)->create(['phone' => '+56900000001']);
+
+    $linkedLead = Lead::factory()->for($company)->converted()->create([
+        'phone' => $phone,
+        'customer_id' => $existingCustomer->id,
+    ]);
+
+    $unlinkedLead = Lead::factory()->for($company)->create([
+        'phone' => $phone,
+        'customer_id' => null,
+    ]);
+
+    $newCustomer = (new CreateCustomerAction)->execute($company->id, [
+        'full_name' => 'Nuevo',
+        'phone' => $phone,
+    ]);
+
+    expect($linkedLead->fresh()->customer_id)->toBe($existingCustomer->id)
+        ->and($unlinkedLead->fresh()->customer_id)->toBe($newCustomer['id'])
+        ->and($unlinkedLead->fresh()->status)->toBe(LeadStatus::Convertido);
 });
 
 test('create customer action enforces phone uniqueness per company only', function () {

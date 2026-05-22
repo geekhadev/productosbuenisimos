@@ -2,6 +2,7 @@
 
 namespace App\Actions\Sales\Customers;
 
+use App\Actions\Sales\Leads\AssociateLeadsWithCustomerForPhoneAction;
 use App\Models\Sales\Customer;
 use Illuminate\Support\Facades\DB;
 
@@ -9,6 +10,7 @@ class CreateCustomerAction
 {
     public function __construct(
         private SyncCustomerAddressesAction $syncCustomerAddresses,
+        private AssociateLeadsWithCustomerForPhoneAction $associateLeadsWithCustomer,
     ) {}
 
     /**
@@ -24,6 +26,12 @@ class CreateCustomerAction
             ]);
 
             $this->syncCustomerAddresses->execute($customer, $attributes['addresses']);
+
+            $this->associateLeadsWithCustomer->execute(
+                $companyId,
+                $attributes['phone'],
+                $customer,
+            );
 
             $customer->load('addresses');
 
