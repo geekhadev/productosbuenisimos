@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'role',
     'source',
     'content',
+    'input_tokens',
+    'output_tokens',
 ])]
 class ChatbotMessage extends Model
 {
