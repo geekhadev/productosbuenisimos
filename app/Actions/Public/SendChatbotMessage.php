@@ -77,6 +77,8 @@ class SendChatbotMessage
                 'role' => ChatbotMessageRole::Assistant,
                 'source' => $source,
                 'content' => $response->text,
+                'input_tokens' => $response->usage->promptTokens,
+                'output_tokens' => $response->usage->completionTokens,
                 'created_at' => now(),
             ]);
 
