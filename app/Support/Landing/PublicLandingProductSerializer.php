@@ -60,6 +60,31 @@ class PublicLandingProductSerializer
     }
 
     /**
+     * @return array{id: string, url: string, mime_type: string|null}|null
+     */
+    public static function video(Product $product): ?array
+    {
+        if (! $product->relationLoaded('media')) {
+            $product->load(['media' => function ($relation): void {
+                $relation->where('type', ProductMediaType::Video->value);
+            }]);
+        }
+
+        $video = $product->media
+            ->first(fn (ProductMedia $item): bool => $item->type === ProductMediaType::Video);
+
+        if ($video === null) {
+            return null;
+        }
+
+        return [
+            'id' => $video->id,
+            'url' => ProductMediaPayload::publicUrl($video),
+            'mime_type' => $video->mime_type,
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public static function forDetail(Product $product): array
@@ -79,6 +104,7 @@ class PublicLandingProductSerializer
             'price' => $product->price,
             'thumbnail_url' => self::thumbnailUrl($product),
             'images' => self::images($product),
+            'video' => self::video($product),
         ];
     }
 }

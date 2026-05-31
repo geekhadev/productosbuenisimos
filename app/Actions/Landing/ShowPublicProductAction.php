@@ -23,7 +23,7 @@ class ShowPublicProductAction
             ->where('company_id', $company->id)
             ->where('id', $productId)
             ->where('is_active', true)
-            ->withLandingImages()
+            ->withLandingDetailMedia()
             ->first();
 
         if ($product === null) {

@@ -87,6 +87,23 @@ class Product extends Model
      * @param  Builder<$this>  $query
      * @return Builder<$this>
      */
+    public function scopeWithLandingDetailMedia(Builder $query): Builder
+    {
+        return $query->with(['media' => function ($relation): void {
+            $relation
+                ->whereIn('type', [
+                    ProductMediaType::Image->value,
+                    ProductMediaType::Video->value,
+                ])
+                ->orderBy('sort_order')
+                ->orderBy('created_at');
+        }]);
+    }
+
+    /**
+     * @param  Builder<$this>  $query
+     * @return Builder<$this>
+     */
     public function scopeSearchFields(Builder $query, ?string $search): Builder
     {
         if ($search === null || $search === '') {

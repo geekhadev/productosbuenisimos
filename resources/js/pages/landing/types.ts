@@ -8,6 +8,12 @@ export type LandingProductImage = {
     alt: string;
 };
 
+export type LandingProductVideo = {
+    id: string;
+    url: string;
+    mime_type: string | null;
+};
+
 export type LandingProduct = {
     id: string;
     name: string;
@@ -34,4 +40,5 @@ export type PublicLandingProductDetail = {
     price: string | number;
     thumbnail_url: string;
     images: LandingProductImage[];
+    video: LandingProductVideo | null;
 };

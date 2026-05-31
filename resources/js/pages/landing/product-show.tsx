@@ -23,10 +23,6 @@ export default function ProductShow({ canRegister = true, product }: ProductShow
     const priceLabel = formatLandingProductPrice(priceToNumber(product.price));
 
     const rows: { label: string; value: string }[] = [
-        { label: 'Código', value: product.code },
-        { label: 'SKU', value: product.sku },
-        { label: 'Precio', value: priceLabel },
-        { label: 'Stock mínimo', value: String(product.minimum_stock) },
         {
             label: 'Ancho',
             value: `${formatLandingDimension(product.width)} cm`,
@@ -38,10 +34,6 @@ export default function ProductShow({ canRegister = true, product }: ProductShow
         {
             label: 'Alto',
             value: `${formatLandingDimension(product.height)} cm`,
-        },
-        {
-            label: 'Volumen',
-            value: `${formatLandingDimension(product.volume)} cm³`,
         },
         {
             label: 'Peso',
@@ -66,24 +58,25 @@ export default function ProductShow({ canRegister = true, product }: ProductShow
                             className="mx-auto w-full max-w-xl lg:max-w-none"
                             images={product.images}
                             productName={product.name}
+                            video={product.video}
                         />
                         <div className="min-w-0">
-                            <p className="text-sm font-medium uppercase tracking-wide text-primary">
-                                Producto
-                            </p>
                             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                                 {product.name}
                             </h1>
+                            <p className="mt-6 text-2xl font-bold tracking-tight text-primary sm:text-3xl lg:text-4xl">
+                                {priceLabel}
+                            </p>
                             {product.description ? (
                                 <p className="mt-4 text-base text-muted-foreground sm:text-lg">
                                     {product.description}
                                 </p>
                             ) : null}
-                            <dl className="mt-6 rounded-lg border border-border/60 bg-card/40 px-3 py-0.5">
+                            <dl className="mt-6 rounded-lg border border-border/60 bg-card/40 px-3 py-0.5 w-42">
                                 {rows.map((row) => (
                                     <div
                                         key={row.label}
-                                        className="flex min-h-8 items-baseline justify-between gap-3 border-b border-border/50 py-1.5 last:border-b-0"
+                                        className="flex min-h-8 items-baseline gap-3 border-b border-border/50 justify-between py-1.5 last:border-b-0"
                                     >
                                         <dt className="shrink-0 text-xs font-medium text-muted-foreground">
                                             {row.label}

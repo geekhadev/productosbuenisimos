@@ -20,7 +20,7 @@ export function LandingProductCard({ product, variant }: LandingProductCardProps
     return (
         <article
             className={cn(
-                'group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs transition-shadow hover:shadow-md',
+                'group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs transition-[background-color,box-shadow] duration-300 hover:bg-muted/40 hover:shadow-md',
                 isHero ? 'lg:max-w-none' : 'w-full',
             )}
         >
@@ -48,7 +48,7 @@ export function LandingProductCard({ product, variant }: LandingProductCardProps
                     )}
                 >
                     <Link
-                        className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         href={landingProductShow.url(product.id)}
                     >
                         {product.name}

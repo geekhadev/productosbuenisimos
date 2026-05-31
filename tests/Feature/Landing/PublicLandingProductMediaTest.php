@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Stock\ProductMediaType;
 use App\Models\Company;
 use App\Models\Stock\Product;
 use App\Models\Stock\ProductMedia;
@@ -50,7 +51,35 @@ test('product detail exposes ordered images for gallery', function () {
             ->where('product.name', 'Galería test')
             ->where('product.images.0.url', '/storage/'.$first->path)
             ->where('product.images.1.url', '/storage/'.$second->path)
-            ->where('product.thumbnail_url', '/storage/'.$first->path));
+            ->where('product.thumbnail_url', '/storage/'.$first->path)
+            ->where('product.video', null));
+});
+
+test('product detail exposes video for gallery when configured', function () {
+    $company = Company::factory()->create(['name' => LandingPublicCatalogCompany::NAME]);
+    $product = Product::factory()->for($company)->create(['is_active' => true, 'name' => 'Con video']);
+
+    $image = ProductMedia::factory()->for($product)->create([
+        'path' => 'products/'.$product->id.'/images/a.webp',
+        'sort_order' => 0,
+    ]);
+    $video = ProductMedia::factory()->for($product)->create([
+        'type' => ProductMediaType::Video,
+        'path' => 'products/'.$product->id.'/videos/demo.mp4',
+        'mime_type' => 'video/mp4',
+        'original_name' => 'demo.mp4',
+    ]);
+
+    Storage::disk('public')->put($image->path, 'a');
+    Storage::disk('public')->put($video->path, 'video-bytes');
+
+    $this->get(route('landing.products.show', $product->id))
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page
+            ->where('product.name', 'Con video')
+            ->where('product.video.url', '/storage/'.$video->path)
+            ->where('product.video.mime_type', 'video/mp4')
+            ->where('product.images.0.url', '/storage/'.$image->path));
 });
 
 test('product without images uses placeholder thumbnail on landing', function () {

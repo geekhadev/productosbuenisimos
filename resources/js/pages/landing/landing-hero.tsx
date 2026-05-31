@@ -27,14 +27,14 @@ export function LandingHero({ heroProduct }: LandingHeroProps) {
                         </p>
                     </div>
                 ) : (
-                    <div className="grid min-h-[min(22rem,65svh)] items-center gap-10 sm:gap-12 lg:min-h-104 lg:grid-cols-2 lg:gap-x-12 lg:gap-y-14">
+                    <div className="group grid min-h-[min(22rem,65svh)] items-center gap-10 rounded-2xl transition-[background-color] duration-300 hover:bg-muted/40 sm:gap-12 lg:min-h-104 lg:grid-cols-2 lg:gap-x-12 lg:gap-y-14">
                         <div className="order-2 flex flex-col justify-center lg:order-1">
                             <p className="mb-3 text-sm font-medium uppercase tracking-wide text-primary">
                                 Tienda online
                             </p>
                             <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl lg:leading-[1.1] xl:text-6xl">
                                 <Link
-                                    className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                                    className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                                     href={landingProductShow.url(heroProduct.id)}
                                 >
                                     {heroProduct.name}
@@ -62,7 +62,7 @@ export function LandingHero({ heroProduct }: LandingHeroProps) {
                                 <div
                                     className={cn(
                                         landingProductImageAreaClass,
-                                        'rounded-2xl border border-border/60 shadow-lg transition-shadow hover:shadow-xl',
+                                        'rounded-2xl border border-border/60 bg-card shadow-lg transition-[box-shadow] duration-300 hover:shadow-xl',
                                     )}
                                 >
                                     <img

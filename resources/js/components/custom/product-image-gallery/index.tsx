@@ -1,23 +1,67 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { ChevronLeft, ChevronRight, Film } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { LANDING_PRODUCT_PLACEHOLDER } from '@/pages/landing/landing-product-visual';
 
-import type { ProductImageGalleryProps } from './types';
+import type { ProductGallerySlide, ProductImageGalleryProps } from './types';
 
-export type { ProductGalleryImage, ProductImageGalleryProps } from './types';
+export type {
+    ProductGalleryImage,
+    ProductGallerySlide,
+    ProductGalleryVideo,
+    ProductImageGalleryProps,
+} from './types';
+
+function buildSlides(
+    images: ProductImageGalleryProps['images'],
+    video: ProductImageGalleryProps['video'],
+    productName: string,
+    placeholderUrl: string,
+): ProductGallerySlide[] {
+    const slides: ProductGallerySlide[] = [];
+
+    if (video) {
+        slides.push({
+            id: video.id,
+            url: video.url,
+            kind: 'video',
+            mime_type: video.mime_type,
+        });
+    }
+
+    if (images.length > 0) {
+        slides.push(
+            ...images.map(
+                (image): ProductGallerySlide => ({
+                    ...image,
+                    kind: 'image',
+                }),
+            ),
+        );
+    } else if (!video) {
+        slides.push({
+            id: 'placeholder',
+            url: placeholderUrl,
+            alt: productName,
+            kind: 'image',
+        });
+    }
+
+    return slides;
+}
 
 export function ProductImageGallery({
     images,
     productName,
+    video = null,
     className,
     placeholderUrl = LANDING_PRODUCT_PLACEHOLDER,
 }: ProductImageGalleryProps) {
-    const slides =
-        images.length > 0
-            ? images
-            : [{ id: 'placeholder', url: placeholderUrl, alt: productName }];
+    const slides = useMemo(
+        () => buildSlides(images, video, productName, placeholderUrl),
+        [images, video, productName, placeholderUrl],
+    );
 
     const [selectedIndex, setSelectedIndex] = useState(0);
     const selected = slides[selectedIndex] ?? slides[0];
@@ -43,16 +87,21 @@ export function ProductImageGallery({
                         role="tablist"
                         aria-label="Miniaturas del producto"
                     >
-                        {slides.map((image, index) => {
+                        {slides.map((slide, index) => {
                             const isActive = index === selectedIndex;
+                            const isVideo = slide.kind === 'video';
 
                             return (
                                 <button
-                                    key={image.id}
+                                    key={slide.id}
                                     type="button"
                                     role="tab"
                                     aria-selected={isActive}
-                                    aria-label={`Ver imagen ${index + 1} de ${slides.length}`}
+                                    aria-label={
+                                        isVideo
+                                            ? 'Ver video del producto'
+                                            : `Ver imagen ${index + (video ? 0 : 1)} de ${slides.length - (video ? 1 : 0)}`
+                                    }
                                     onClick={() => setSelectedIndex(index)}
                                     className={cn(
                                         'relative size-14 shrink-0 overflow-hidden rounded-md border bg-muted transition-colors sm:size-16 lg:size-16',
@@ -61,13 +110,19 @@ export function ProductImageGallery({
                                             : 'border-border hover:border-primary/50',
                                     )}
                                 >
-                                    <img
-                                        src={image.url}
-                                        alt=""
-                                        className="size-full object-cover"
-                                        loading="lazy"
-                                        decoding="async"
-                                    />
+                                    {isVideo ? (
+                                        <span className="flex size-full items-center justify-center bg-muted text-muted-foreground">
+                                            <Film aria-hidden className="size-5" />
+                                        </span>
+                                    ) : (
+                                        <img
+                                            src={slide.url}
+                                            alt=""
+                                            className="size-full object-cover"
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
+                                    )}
                                 </button>
                             );
                         })}
@@ -75,15 +130,32 @@ export function ProductImageGallery({
                 ) : null}
 
                 <div className="relative order-1 min-w-0 flex-1 lg:order-2">
-                    <div className="relative aspect-square overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-lg">
-                        <img
-                            key={selected.id}
-                            src={selected.url}
-                            alt={selected.alt || productName}
-                            className="size-full object-contain p-2 sm:p-4"
-                            loading="eager"
-                            decoding="async"
-                        />
+                    <div
+                        className={cn(
+                            'relative aspect-square overflow-hidden rounded-2xl border border-border/60 shadow-lg',
+                            selected.kind === 'video' ? 'bg-black' : 'bg-background',
+                        )}
+                    >
+                        {selected.kind === 'video' ? (
+                            <video
+                                key={selected.id}
+                                src={selected.url}
+                                controls
+                                playsInline
+                                className="size-full object-contain"
+                            >
+                                Tu navegador no puede reproducir este video.
+                            </video>
+                        ) : (
+                            <img
+                                key={selected.id}
+                                src={selected.url}
+                                alt={selected.alt || productName}
+                                className="size-full object-contain"
+                                loading="eager"
+                                decoding="async"
+                            />
+                        )}
                         {hasMultiple ? (
                             <>
                                 <Button
@@ -92,7 +164,7 @@ export function ProductImageGallery({
                                     size="icon"
                                     className="absolute top-1/2 left-2 size-9 -translate-y-1/2 rounded-full shadow-md sm:left-3"
                                     onClick={goPrev}
-                                    aria-label="Imagen anterior"
+                                    aria-label="Elemento anterior"
                                 >
                                     <ChevronLeft className="size-5" aria-hidden />
                                 </Button>
@@ -102,7 +174,7 @@ export function ProductImageGallery({
                                     size="icon"
                                     className="absolute top-1/2 right-2 size-9 -translate-y-1/2 rounded-full shadow-md sm:right-3"
                                     onClick={goNext}
-                                    aria-label="Imagen siguiente"
+                                    aria-label="Elemento siguiente"
                                 >
                                     <ChevronRight className="size-5" aria-hidden />
                                 </Button>
