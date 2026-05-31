@@ -4,6 +4,7 @@ import { iniciar, mensaje, nuevaConversacion } from '@/actions/App/Http/Controll
 import type {
     ChatbotIniciarResponse,
     ChatbotMessage,
+    ChatbotMensajeResponse,
     ChatbotPhase,
     ChatbotProductContext,
 } from '@/components/chatbot/types';
@@ -118,7 +119,7 @@ export function useChatbot({ product }: UseChatbotOptions = {}) {
             const shouldSendProductContext = isNew && product != null;
 
             try {
-                const data = await postJson<{ reply: string }>(mensaje.post(), {
+                const data = await postJson<ChatbotMensajeResponse>(mensaje.post(), {
                     conversation_id: conversationId,
                     source: CHATBOT_SOURCE,
                     message: trimmed,
@@ -135,6 +136,7 @@ export function useChatbot({ product }: UseChatbotOptions = {}) {
                         role: 'assistant',
                         source: CHATBOT_SOURCE,
                         content: data.reply,
+                        attachments: data.attachments,
                         created_at: new Date().toISOString(),
                     },
                 ]);

@@ -12,11 +12,18 @@ export type ConversationListItem = {
     last_activity_at: string;
 };
 
+export type ConversationVideoAttachment = {
+    type: 'video';
+    url: string;
+    product_name: string;
+};
+
 export type ConversationMessage = {
     id: string;
     role: 'user' | 'assistant';
     source: string;
     content: string;
+    attachments?: ConversationVideoAttachment[];
     input_tokens: number | null;
     output_tokens: number | null;
     created_at: string;

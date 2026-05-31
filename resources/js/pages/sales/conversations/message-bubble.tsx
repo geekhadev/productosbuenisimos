@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { SourceBadge } from '@/pages/sales/conversations/source-badge';
-import type { ConversationMessage } from '@/pages/sales/conversations/types';
+import type { ConversationMessage, ConversationVideoAttachment } from '@/pages/sales/conversations/types';
 
 type MessageBubbleProps = {
     message: ConversationMessage;
@@ -46,6 +46,12 @@ export function MessageBubble({
                     )}
                 >
                     {message.content}
+                    {message.attachments?.map((attachment, attachmentIndex) => (
+                        <ConversationAttachment
+                            attachment={attachment}
+                            key={`${message.id}-attachment-${attachmentIndex}`}
+                        />
+                    ))}
                 </div>
             </div>
             <div className="flex items-center gap-2 px-1">
@@ -63,6 +69,31 @@ export function MessageBubble({
                     </span>
                 ) : null}
             </div>
+        </div>
+    );
+}
+
+function ConversationAttachment({
+    attachment,
+}: {
+    attachment: ConversationVideoAttachment;
+}) {
+    if (attachment.type !== 'video') {
+        return null;
+    }
+
+    return (
+        <div className="mt-2 space-y-1">
+            <p className="text-xs font-medium opacity-80">{attachment.product_name}</p>
+            <video
+                className="max-h-64 w-full rounded-lg bg-black/10"
+                controls
+                playsInline
+                preload="metadata"
+                src={attachment.url}
+            >
+                Tu navegador no puede reproducir este video.
+            </video>
         </div>
     );
 }

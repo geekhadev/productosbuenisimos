@@ -6,10 +6,14 @@ trait BuildsChatbotAgentPrompt
 {
     /**
      * @param  array{id: string, name: string, code: string, sku: string, price: float|int|string}|null  $productContext
+     * @param  list<string>  $alreadySentVideoProductNames
      */
-    protected function buildAgentPrompt(string $message, string $phone, ?array $productContext = null): string
+    protected function buildAgentPrompt(string $message, string $phone, ?array $productContext = null, array $alreadySentVideoProductNames = []): string
     {
-        $blocks = [$this->buildVisitorPhoneContext($phone)];
+        $blocks = [
+            $this->buildVisitorPhoneContext($phone),
+            $this->buildMediaContext($alreadySentVideoProductNames),
+        ];
 
         if ($productContext !== null) {
             $blocks[] = $this->buildProductContextBlock($productContext);
@@ -29,6 +33,26 @@ trait BuildsChatbotAgentPrompt
 - NO vuelvas a pedir el número de teléfono.
 - Si aún no identificaste al cliente en esta conversación, invoca de inmediato `get_customer_by_phone` con ese número y continúa el flujo desde ahí.
 PROMPT;
+    }
+
+    /**
+     * @param  list<string>  $alreadySentVideoProductNames
+     */
+    protected function buildMediaContext(array $alreadySentVideoProductNames = []): string
+    {
+        $base = <<<'PROMPT'
+[Instrucciones de media — chatbot web]
+- Antes de describir un producto, invoca `get_products` para obtener datos reales del catálogo.
+- NO inventes enlaces de video ni uses markdown como [Ver Video](#). El sistema adjunta el video automáticamente cuando presentas un producto.
+- En tu mensaje puedes mencionar que compartes el video de funcionamiento; no pegues URLs manualmente.
+PROMPT;
+
+        if ($alreadySentVideoProductNames !== []) {
+            $list = implode(', ', $alreadySentVideoProductNames);
+            $base .= "\n- Ya enviaste el video de los siguientes productos en esta conversación (NO vuelvas a mencionarlo ni a presentarlos como si fuera la primera vez): {$list}.";
+        }
+
+        return $base;
     }
 
     /**

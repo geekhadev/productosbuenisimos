@@ -3,10 +3,12 @@
 use App\Ai\Agents\SalesAgent;
 use App\Enums\ChatbotMessageRole;
 use App\Enums\ChatbotSource;
+use App\Enums\Stock\ProductMediaType;
 use App\Models\Company;
 use App\Models\Public\ChatbotConversation;
 use App\Models\Public\ChatbotMessage;
 use App\Models\Stock\Product;
+use App\Models\Stock\ProductMedia;
 use App\Support\ChatbotCompany;
 use Laravel\Ai\Ai;
 
@@ -29,7 +31,10 @@ test('active conversation message returns reply and stores web messages', functi
     ]);
 
     $response->assertSuccessful()
-        ->assertJson(['reply' => '¡Hola! ¿En qué te ayudo?']);
+        ->assertJson([
+            'reply' => '¡Hola! ¿En qué te ayudo?',
+            'attachments' => [],
+        ]);
 
     Ai::assertAgentWasPrompted(SalesAgent::class, function ($prompt) use ($conversation) {
         return str_contains($prompt->prompt, '[Contexto del visitante — chatbot público]')
@@ -86,6 +91,55 @@ test('product context is sent to agent but only user message is stored', functio
         ->value('content');
 
     expect($stored)->toBe('Hola');
+});
+
+test('assistant reply includes video attachment when presenting a matched product', function () {
+    $company = ChatbotCompany::findOrFail();
+    $conversation = ChatbotConversation::factory()->for($company)->create(['is_active' => true]);
+    $product = Product::factory()->for($company)->create([
+        'name' => 'Imanes de Neodimio Autoadhesivos',
+        'is_active' => true,
+    ]);
+
+    ProductMedia::factory()->create([
+        'product_id' => $product->id,
+        'type' => ProductMediaType::Video,
+        'path' => 'products/'.$product->id.'/videos/demo.mp4',
+        'mime_type' => 'video/mp4',
+        'original_name' => 'demo.mp4',
+    ]);
+
+    ChatbotMessage::factory()->for($conversation, 'conversation')->create([
+        'role' => ChatbotMessageRole::User,
+        'source' => ChatbotSource::Web,
+        'content' => 'quiero 2 imanes',
+    ]);
+
+    Ai::fakeAgent(
+        SalesAgent::class,
+        ['Con gusto, Don Irwing. Le comparto el video de funcionamiento de los imanes. [Ver Video](#)'],
+    );
+
+    $response = $this->postJson(route('chatbot.mensaje'), [
+        'conversation_id' => $conversation->id,
+        'source' => 'web',
+        'message' => 'irwing',
+    ]);
+
+    $response->assertSuccessful()
+        ->assertJsonPath('attachments.0.type', 'video')
+        ->assertJsonPath('attachments.0.url', '/storage/products/'.$product->id.'/videos/demo.mp4');
+
+    expect($response->json('reply'))->not->toContain('[Ver Video](#)');
+
+    $assistantMessage = ChatbotMessage::query()
+        ->where('chatbot_conversation_id', $conversation->id)
+        ->where('role', ChatbotMessageRole::Assistant)
+        ->latest('created_at')
+        ->first();
+
+    expect($assistantMessage?->attachments)->toHaveCount(1)
+        ->and($assistantMessage?->content)->not->toContain('[Ver Video](#)');
 });
 
 test('message history preserves per-message source', function () {

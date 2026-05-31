@@ -6,6 +6,7 @@ use App\Enums\Sales\LeadStatus;
 use App\Models\Public\ChatbotConversation;
 use App\Models\Public\ChatbotMessage;
 use App\Models\Sales\Lead;
+use App\Support\Chatbot\ChatbotMessagePayload;
 
 class GetConversationDetailAction
 {
@@ -30,13 +31,10 @@ class GetConversationDetailAction
             'source' => $conversation->source->value,
             'messages' => $conversation->messages
                 ->map(fn (ChatbotMessage $message): array => [
+                    ...ChatbotMessagePayload::format($message),
                     'id' => $message->id,
-                    'role' => $message->role->value,
-                    'source' => $message->source->value,
-                    'content' => $message->content,
                     'input_tokens' => $message->input_tokens,
                     'output_tokens' => $message->output_tokens,
-                    'created_at' => $message->created_at?->toIso8601String(),
                 ])
                 ->values()
                 ->all(),

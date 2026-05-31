@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'role',
     'source',
     'content',
+    'attachments',
     'input_tokens',
     'output_tokens',
 ])]
@@ -47,6 +48,7 @@ class ChatbotMessage extends Model
         return [
             'role' => ChatbotMessageRole::class,
             'source' => ChatbotSource::class,
+            'attachments' => 'array',
             'created_at' => 'datetime',
         ];
     }

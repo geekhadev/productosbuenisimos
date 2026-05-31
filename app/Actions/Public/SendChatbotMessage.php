@@ -9,6 +9,7 @@ use App\Enums\ChatbotSource;
 use App\Exceptions\Public\ChatbotAgentUnavailableException;
 use App\Models\Public\ChatbotConversation;
 use App\Models\Public\ChatbotMessage;
+use App\Support\Chatbot\ResolveChatbotVideoAttachments;
 use App\Support\ChatbotAiConfiguration;
 use App\Support\ChatbotCompany;
 use App\Support\ChatbotParticipant;
@@ -21,9 +22,13 @@ class SendChatbotMessage
 {
     use BuildsChatbotAgentPrompt;
 
+    public function __construct(
+        private readonly ResolveChatbotVideoAttachments $videoAttachments,
+    ) {}
+
     /**
      * @param  array{id: string, name: string, code: string, sku: string, price: float|int|string}|null  $productContext
-     * @return array{reply: string}
+     * @return array{reply: string, attachments: list<array{type: string, url: string, product_name: string}>}
      */
     public function execute(
         string $conversationId,
@@ -43,13 +48,25 @@ class SendChatbotMessage
             ->where('is_active', true)
             ->firstOrFail();
 
+        $alreadySentVideoProductNames = $conversation->messages()
+            ->where('role', ChatbotMessageRole::Assistant)
+            ->whereNotNull('attachments')
+            ->pluck('attachments')
+            ->flatten(1)
+            ->filter(fn (mixed $a): bool => is_array($a) && ($a['type'] ?? '') === 'video' && filled($a['product_name'] ?? null))
+            ->pluck('product_name')
+            ->unique()
+            ->values()
+            ->all();
+
         $builtPrompt = $this->buildAgentPrompt(
             message: $message,
             phone: $conversation->phone,
             productContext: $productContext,
+            alreadySentVideoProductNames: $alreadySentVideoProductNames,
         );
 
-        return DB::transaction(function () use ($conversation, $source, $message, $builtPrompt, $company): array {
+        return DB::transaction(function () use ($conversation, $source, $message, $builtPrompt, $company, $productContext): array {
             ChatbotMessage::query()->create([
                 'chatbot_conversation_id' => $conversation->id,
                 'role' => ChatbotMessageRole::User,
@@ -72,17 +89,30 @@ class SendChatbotMessage
                 throw ChatbotAgentUnavailableException::requestFailed();
             }
 
+            $reply = $this->videoAttachments->sanitizeAgentText($response->text);
+            $attachments = $this->videoAttachments->resolve(
+                companyId: $company->id,
+                response: $response,
+                userMessage: $message,
+                productContext: $productContext,
+                conversation: $conversation,
+            );
+
             ChatbotMessage::query()->create([
                 'chatbot_conversation_id' => $conversation->id,
                 'role' => ChatbotMessageRole::Assistant,
                 'source' => $source,
-                'content' => $response->text,
+                'content' => $reply,
+                'attachments' => $attachments,
                 'input_tokens' => $response->usage->promptTokens,
                 'output_tokens' => $response->usage->completionTokens,
                 'created_at' => now(),
             ]);
 
-            return ['reply' => $response->text];
+            return [
+                'reply' => $reply,
+                'attachments' => $attachments,
+            ];
         });
     }
 }

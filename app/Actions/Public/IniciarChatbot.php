@@ -5,6 +5,7 @@ namespace App\Actions\Public;
 use App\Actions\Public\Concerns\EnsuresChatbotLead;
 use App\Enums\ChatbotSource;
 use App\Models\Public\ChatbotConversation;
+use App\Support\Chatbot\ChatbotMessagePayload;
 use App\Support\ChatbotCompany;
 use App\Support\ChatbotPhone;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,7 @@ class IniciarChatbot
      * @return array{
      *     conversation_id: string,
      *     is_new: bool,
-     *     messages: list<array{role: string, source: string, content: string, created_at: string}>
+     *     messages: list<array{role: string, source: string, content: string, attachments: list<array<string, mixed>>, created_at: string}>
      * }
      */
     public function execute(string $phone, ChatbotSource $source): array
@@ -75,12 +76,7 @@ class IniciarChatbot
     {
         return $conversation->messages()
             ->get()
-            ->map(fn ($message) => [
-                'role' => $message->role->value,
-                'source' => $message->source->value,
-                'content' => $message->content,
-                'created_at' => $message->created_at?->toIso8601String() ?? now()->toIso8601String(),
-            ])
+            ->map(fn ($message) => ChatbotMessagePayload::format($message))
             ->values()
             ->all();
     }
