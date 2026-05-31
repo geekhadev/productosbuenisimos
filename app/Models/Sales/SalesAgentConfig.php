@@ -25,13 +25,6 @@ class SalesAgentConfig extends Model
 
     public const DEFAULT_PROVIDER = 'openai';
 
-    /**
-     * @var list<string>
-     */
-    public const ALLOWED_PROVIDERS = [
-        self::DEFAULT_PROVIDER,
-    ];
-
     public const TOOL_GET_PRODUCTS = 'get_products';
 
     public const TOOL_GET_CUSTOMER_BY_PHONE = 'get_customer_by_phone';
@@ -145,9 +138,42 @@ class SalesAgentConfig extends Model
         return self::DEFAULT_PROVIDER;
     }
 
+    /**
+     * @return list<string>
+     */
+    public static function allowedProviders(): array
+    {
+        /** @var array<string, array{label: string, models: list<array{value: string, label: string}>}> $providers */
+        $providers = config('sales-agent.providers', []);
+
+        return array_keys($providers);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function allowedModelsForProvider(string $provider): array
+    {
+        /** @var list<array{value: string, label: string}> $models */
+        $models = config("sales-agent.providers.{$provider}.models", []);
+
+        return array_column($models, 'value');
+    }
+
     public static function defaultModel(): ?string
     {
-        return null;
+        return self::resolveModel(self::defaultProvider(), null);
+    }
+
+    public static function resolveModel(string $provider, ?string $model): ?string
+    {
+        $allowedModels = self::allowedModelsForProvider($provider);
+
+        if ($model !== null && in_array($model, $allowedModels, true)) {
+            return $model;
+        }
+
+        return $allowedModels[0] ?? null;
     }
 
     /**
@@ -155,9 +181,31 @@ class SalesAgentConfig extends Model
      */
     public static function providersForFrontend(): array
     {
-        return [
-            ['value' => self::DEFAULT_PROVIDER, 'label' => 'OpenAI'],
-        ];
+        /** @var array<string, array{label: string, models: list<array{value: string, label: string}>}> $providers */
+        $providers = config('sales-agent.providers', []);
+
+        return array_map(
+            fn (array $provider, string $key): array => [
+                'value' => $key,
+                'label' => $provider['label'],
+            ],
+            $providers,
+            array_keys($providers),
+        );
+    }
+
+    /**
+     * @return array<string, list<array{value: string, label: string}>>
+     */
+    public static function providerModelsForFrontend(): array
+    {
+        /** @var array<string, array{label: string, models: list<array{value: string, label: string}>}> $providers */
+        $providers = config('sales-agent.providers', []);
+
+        return array_map(
+            fn (array $provider): array => $provider['models'],
+            $providers,
+        );
     }
 
     public static function defaultPrompt(): string

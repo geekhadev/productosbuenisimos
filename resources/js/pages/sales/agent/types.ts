@@ -9,6 +9,11 @@ export type AgentProviderOption = {
     label: string;
 };
 
+export type AgentModelOption = {
+    value: string;
+    label: string;
+};
+
 export type AgentConfigFormData = {
     enabled_tools: string[];
     provider: string;
@@ -23,6 +28,7 @@ export type AgentConfigEditPageProps = {
     provider: string;
     model: string;
     providers: AgentProviderOption[];
+    providerModels: Record<string, AgentModelOption[]>;
     prompt: string;
     usesCustomPrompt: boolean;
     can: {

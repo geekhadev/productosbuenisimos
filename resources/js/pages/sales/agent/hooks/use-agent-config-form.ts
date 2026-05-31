@@ -7,11 +7,18 @@ import type {
 import { dashboard } from '@/routes';
 import { edit as agentEdit, update as agentUpdate } from '@/routes/sales/agent';
 
+function defaultModelForProvider(
+    providerModels: AgentConfigEditPageProps['providerModels'],
+    provider: string,
+): string {
+    return providerModels[provider]?.[0]?.value ?? '';
+}
+
 function buildFormDefaults(props: AgentConfigEditPageProps): AgentConfigFormData {
     return {
         enabled_tools: props.enabledTools,
         provider: props.provider,
-        model: props.model,
+        model: props.model || defaultModelForProvider(props.providerModels, props.provider),
         prompt: props.prompt,
         use_default_prompt: !props.usesCustomPrompt,
     };
@@ -81,6 +88,16 @@ export function useAgentConfigForm(props: AgentConfigEditPageProps) {
         [form],
     );
 
+    const onProviderChange = useCallback(
+        (provider: string) => {
+            form.setData({
+                provider,
+                model: defaultModelForProvider(props.providerModels, provider),
+            });
+        },
+        [form, props.providerModels],
+    );
+
     const submit = useCallback(
         (e: React.FormEvent) => {
             e.preventDefault();
@@ -101,5 +118,6 @@ export function useAgentConfigForm(props: AgentConfigEditPageProps) {
         isToolEnabled,
         toggleTool,
         onPromptChange,
+        onProviderChange,
     };
 }

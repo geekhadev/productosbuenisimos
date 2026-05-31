@@ -10,7 +10,7 @@ class UpdateAgentConfig
      * @param  array{
      *     enabled_tools: list<string>,
      *     provider: string,
-     *     model: ?string,
+     *     model: string,
      *     prompt: ?string,
      * }  $attributes
      */

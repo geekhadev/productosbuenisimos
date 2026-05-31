@@ -34,8 +34,12 @@ class AgentConfigController extends Controller
             'tools' => SalesAgentConfig::toolsForFrontend(),
             'enabledTools' => $config?->enabled_tools ?? SalesAgentConfig::defaultEnabledTools(),
             'provider' => $config?->provider ?? SalesAgentConfig::defaultProvider(),
-            'model' => $config?->model ?? '',
+            'model' => SalesAgentConfig::resolveModel(
+                $config?->provider ?? SalesAgentConfig::defaultProvider(),
+                $config?->model,
+            ) ?? '',
             'providers' => SalesAgentConfig::providersForFrontend(),
+            'providerModels' => SalesAgentConfig::providerModelsForFrontend(),
             'prompt' => filled($config?->prompt)
                 ? $config->prompt
                 : SalesAgentConfig::defaultPrompt(),

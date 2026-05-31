@@ -34,7 +34,8 @@ test('edit page shows default tools and prompt when no config exists', function 
             ->where('can.update', true)
             ->where('prompt', SalesAgentConfig::defaultPrompt())
             ->where('provider', SalesAgentConfig::defaultProvider())
-            ->where('model', '')
+            ->where('model', SalesAgentConfig::defaultModel())
+            ->has('providerModels')
             ->has('tools', count(SalesAgentConfig::TOOL_SLUGS)));
 });
 
@@ -50,7 +51,7 @@ test('update persists agent config for selected company', function () {
                 SalesAgentConfig::TOOL_CREATE_ORDER,
             ],
             'provider' => SalesAgentConfig::DEFAULT_PROVIDER,
-            'model' => 'gpt-4o',
+            'model' => 'gpt-4o-mini',
             'prompt' => 'Instrucciones personalizadas.',
             'use_default_prompt' => false,
         ])
@@ -65,7 +66,7 @@ test('update persists agent config for selected company', function () {
         ])
         ->and($config->prompt)->toBe('Instrucciones personalizadas.')
         ->and($config->provider)->toBe(SalesAgentConfig::DEFAULT_PROVIDER)
-        ->and($config->model)->toBe('gpt-4o');
+        ->and($config->model)->toBe('gpt-4o-mini');
 });
 
 test('update with use default prompt clears stored prompt', function () {
@@ -79,7 +80,7 @@ test('update with use default prompt clears stored prompt', function () {
         ->put(route('sales.agent.update'), [
             'enabled_tools' => SalesAgentConfig::defaultEnabledTools(),
             'provider' => SalesAgentConfig::DEFAULT_PROVIDER,
-            'model' => '',
+            'model' => SalesAgentConfig::defaultModel(),
             'prompt' => 'ignored',
             'use_default_prompt' => true,
         ])
@@ -99,6 +100,7 @@ test('update rejects disabling all tools', function () {
         ->put(route('sales.agent.update'), [
             'enabled_tools' => [],
             'provider' => SalesAgentConfig::DEFAULT_PROVIDER,
+            'model' => SalesAgentConfig::defaultModel(),
             'use_default_prompt' => true,
         ])
         ->assertSessionHasErrors('enabled_tools');
@@ -130,13 +132,13 @@ test('sales agent uses provider and model from company config', function () {
         ->for($company)
         ->create([
             'provider' => SalesAgentConfig::DEFAULT_PROVIDER,
-            'model' => 'gpt-4.1-mini',
+            'model' => 'gpt-4o-mini',
         ]);
 
     $agent = SalesAgent::make(companyId: $company->id);
 
     expect($agent->provider())->toBe(SalesAgentConfig::DEFAULT_PROVIDER)
-        ->and($agent->model())->toBe('gpt-4.1-mini');
+        ->and($agent->model())->toBe('gpt-4o-mini');
 });
 
 test('sales agent falls back to defaults without config', function () {
@@ -145,11 +147,26 @@ test('sales agent falls back to defaults without config', function () {
 
     expect($agent->instructions())->toContain('asistente de ventas')
         ->and($agent->provider())->toBe(SalesAgentConfig::defaultProvider())
-        ->and($agent->model())->toBeNull();
+        ->and($agent->model())->toBe(SalesAgentConfig::defaultModel());
 
     $toolClasses = array_map(fn ($tool) => $tool::class, iterator_to_array($agent->tools()));
 
     expect($toolClasses)->toContain(GetProducts::class, CreateCustomer::class);
+});
+
+test('update rejects invalid model for provider', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->root()->create();
+
+    $this->actingAs($user)
+        ->withSession(withSelectedCompany($company))
+        ->put(route('sales.agent.update'), [
+            'enabled_tools' => SalesAgentConfig::defaultEnabledTools(),
+            'provider' => SalesAgentConfig::DEFAULT_PROVIDER,
+            'model' => 'gpt-4o',
+            'use_default_prompt' => true,
+        ])
+        ->assertSessionHasErrors('model');
 });
 
 test('guest cannot access agent config', function () {

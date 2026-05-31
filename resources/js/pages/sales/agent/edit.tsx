@@ -2,7 +2,6 @@ import { Head } from '@inertiajs/react';
 import { ChevronDown, Save } from 'lucide-react';
 import { FormSelect } from '@/components/custom/form-select';
 import { FormSubmitButton } from '@/components/custom/form-submit-button';
-import { FormTextInput } from '@/components/custom/form-text-input';
 import InputError from '@/components/input-error';
 import {
     Collapsible,
@@ -24,15 +23,23 @@ function AgentConfigEdit(props: AgentConfigEditPageProps) {
         isToolEnabled,
         toggleTool,
         onPromptChange,
+        onProviderChange,
     } = useAgentConfigForm(props);
 
     const canUpdate = props.can.update;
     const onlyOneToolEnabled = form.data.enabled_tools.length === 1;
 
     const providerOptions = props.providers.map((option) => ({
-        value: option.value,
+        id: option.value,
         label: option.label,
     }));
+
+    const modelOptions = (props.providerModels[form.data.provider] ?? []).map(
+        (option) => ({
+            id: option.value,
+            label: option.label,
+        }),
+    );
 
     return (
         <>
@@ -45,7 +52,7 @@ function AgentConfigEdit(props: AgentConfigEditPageProps) {
                     onSubmit={submit}
                     className="flex h-[calc(100vh-170px)] flex-col gap-6 lg:flex-row lg:items-start lg:gap-8"
                 >
-                    <aside className="w-full shrink-0 self-start space-y-4 border-b pb-6 lg:w-64 lg:border-r lg:border-b-0 lg:pb-0 lg:pr-6">
+                    <aside className="w-full shrink-0 self-start space-y-4 border-b pb-6 lg:w-86 lg:border-r lg:border-b-0 lg:pb-0 lg:pr-6">
                         <FormSelect
                             label="Proveedor"
                             error={form.errors.provider}
@@ -56,19 +63,20 @@ function AgentConfigEdit(props: AgentConfigEditPageProps) {
                                 value: form.data.provider,
                                 disabled: !canUpdate,
                                 onChange: (e) =>
-                                    form.setData('provider', e.target.value),
+                                    onProviderChange(e.target.value),
                             }}
                         />
 
-                        <FormTextInput
+                        <FormSelect
                             label="Modelo"
                             error={form.errors.model}
-                            inputProps={{
+                            options={modelOptions}
+                            placeholder=""
+                            selectProps={{
                                 id: 'agent-model',
                                 name: 'model',
-                                placeholder: 'gpt-4o-mini',
                                 value: form.data.model,
-                                readOnly: !canUpdate,
+                                disabled: !canUpdate || modelOptions.length === 0,
                                 onChange: (e) =>
                                     form.setData('model', e.target.value),
                             }}
