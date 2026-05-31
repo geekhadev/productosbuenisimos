@@ -5,6 +5,7 @@ namespace App\Support\Stock;
 use App\Enums\Stock\ProductMediaType;
 use App\Models\Stock\Product;
 use App\Models\Stock\ProductMedia;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 class ProductMediaPayload
@@ -14,10 +15,25 @@ class ProductMediaPayload
      */
     public static function forProduct(Product $product): array
     {
-        $media = $product->media()
-            ->orderBy('sort_order')
-            ->orderBy('created_at')
-            ->get();
+        if ($product->relationLoaded('media')) {
+            return self::fromMedia($product->media);
+        }
+
+        return self::fromMedia(
+            $product->media()
+                ->orderBy('sort_order')
+                ->orderBy('created_at')
+                ->get()
+        );
+    }
+
+    /**
+     * @param  Collection<int, ProductMedia>|iterable<int, ProductMedia>  $media
+     * @return array{images: list<array<string, mixed>>, video: array<string, mixed>|null}
+     */
+    public static function fromMedia(iterable $media): array
+    {
+        $media = $media instanceof Collection ? $media : collect($media);
 
         $images = $media
             ->filter(fn (ProductMedia $item): bool => $item->type === ProductMediaType::Image)

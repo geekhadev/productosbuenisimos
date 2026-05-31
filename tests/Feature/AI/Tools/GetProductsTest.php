@@ -2,8 +2,10 @@
 
 use App\Actions\AI\Tools\GetProductsAction;
 use App\Ai\Tools\GetProducts;
+use App\Enums\Stock\ProductMediaType;
 use App\Models\Company;
 use App\Models\Stock\Product;
+use App\Models\Stock\ProductMedia;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\Support\Str;
 use Laravel\Ai\Tools\Request;
@@ -81,4 +83,42 @@ test('get products tool exposes expected name and empty schema', function () {
 
     expect($tool->name())->toBe('get_products')
         ->and($tool->schema(new JsonSchemaTypeFactory))->toBe([]);
+});
+
+test('get products action returns image and video urls', function () {
+    $company = Company::factory()->create();
+    $product = Product::factory()->for($company)->create(['is_active' => true]);
+
+    $firstImage = ProductMedia::factory()->for($product)->create([
+        'path' => 'products/'.$product->id.'/images/a.webp',
+        'sort_order' => 0,
+    ]);
+    $secondImage = ProductMedia::factory()->for($product)->create([
+        'path' => 'products/'.$product->id.'/images/b.webp',
+        'sort_order' => 1,
+    ]);
+    $video = ProductMedia::factory()->for($product)->create([
+        'type' => ProductMediaType::Video,
+        'path' => 'products/'.$product->id.'/videos/clip.mp4',
+        'mime_type' => 'video/mp4',
+        'original_name' => 'clip.mp4',
+    ]);
+
+    $products = (new GetProductsAction)->execute($company->id);
+
+    expect($products)->toHaveCount(1)
+        ->and($products[0]['images'])->toHaveCount(2)
+        ->and($products[0]['images'][0]['url'])->toBe('/storage/'.$firstImage->path)
+        ->and($products[0]['images'][1]['url'])->toBe('/storage/'.$secondImage->path)
+        ->and($products[0]['video']['url'])->toBe('/storage/'.$video->path);
+});
+
+test('get products action returns empty media when product has no images or video', function () {
+    $company = Company::factory()->create();
+    Product::factory()->for($company)->create(['is_active' => true]);
+
+    $products = (new GetProductsAction)->execute($company->id);
+
+    expect($products[0]['images'])->toBe([])
+        ->and($products[0]['video'])->toBeNull();
 });

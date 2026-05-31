@@ -20,7 +20,7 @@ class GetProducts implements Tool
     public function description(): Stringable|string
     {
         return 'Devuelve todos los productos activos del catálogo de la empresa '
-            .'como JSON para que el agente pueda responder preguntas sobre disponibilidad y precios.';
+            .'como JSON para que el agente pueda responder preguntas sobre disponibilidad, precios, imágenes y video.';
     }
 
     public function handle(Request $request): Stringable|string
