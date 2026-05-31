@@ -60,11 +60,8 @@ class UpdateAgentConfigRequest extends FormRequest
             $prompt = null;
         }
 
-        /** @var list<string> $enabledTools */
-        $enabledTools = array_values(array_unique($validated['enabled_tools']));
-
         return [
-            'enabled_tools' => $enabledTools,
+            'enabled_tools' => SalesAgentConfig::defaultEnabledTools(),
             'provider' => $validated['provider'],
             'model' => $validated['model'],
             'prompt' => $prompt,

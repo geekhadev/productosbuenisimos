@@ -14,9 +14,13 @@ function defaultModelForProvider(
     return providerModels[provider]?.[0]?.value ?? '';
 }
 
+function allToolSlugs(props: AgentConfigEditPageProps): string[] {
+    return props.tools.map((tool) => tool.slug);
+}
+
 function buildFormDefaults(props: AgentConfigEditPageProps): AgentConfigFormData {
     return {
-        enabled_tools: props.enabledTools ?? [],
+        enabled_tools: allToolSlugs(props),
         provider: props.provider,
         model: props.model || defaultModelForProvider(props.providerModels, props.provider),
         prompt: props.prompt ?? '',
@@ -40,47 +44,6 @@ export function useAgentConfigForm(props: AgentConfigEditPageProps) {
     useLayoutEffect(() => {
         setLayoutProps({ breadcrumbs });
     }, [breadcrumbs]);
-
-    const enabledTools = useMemo(
-        () => form.data.enabled_tools ?? [],
-        [form.data.enabled_tools],
-    );
-    const enabledToolsCount = enabledTools.length;
-
-    const isToolEnabled = useCallback(
-        (slug: string) => enabledTools.includes(slug),
-        [enabledTools],
-    );
-
-    const toggleTool = useCallback(
-        (slug: string, enabled: boolean) => {
-            if (!props.can.update) {
-                return;
-            }
-
-            const current = form.data.enabled_tools ?? [];
-
-            if (enabled) {
-                if (current.includes(slug)) {
-                    return;
-                }
-
-                form.setData('enabled_tools', [...current, slug]);
-
-                return;
-            }
-
-            if (current.length <= 1) {
-                return;
-            }
-
-            form.setData(
-                'enabled_tools',
-                current.filter((item) => item !== slug),
-            );
-        },
-        [form, props.can.update],
-    );
 
     const onPromptChange = useCallback(
         (value: string) => {
@@ -120,9 +83,6 @@ export function useAgentConfigForm(props: AgentConfigEditPageProps) {
     return {
         form,
         submit,
-        enabledToolsCount,
-        isToolEnabled,
-        toggleTool,
         onPromptChange,
         onProviderChange,
     };

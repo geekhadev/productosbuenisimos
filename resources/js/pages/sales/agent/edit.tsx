@@ -9,25 +9,16 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAgentConfigForm } from '@/pages/sales/agent/hooks/use-agent-config-form';
 import type { AgentConfigEditPageProps, AgentToolDefinition } from '@/pages/sales/agent/types';
 
 function AgentConfigEdit(props: AgentConfigEditPageProps) {
-    const {
-        form,
-        submit,
-        enabledToolsCount,
-        isToolEnabled,
-        toggleTool,
-        onPromptChange,
-        onProviderChange,
-    } = useAgentConfigForm(props);
+    const { form, submit, onPromptChange, onProviderChange } =
+        useAgentConfigForm(props);
 
     const canUpdate = props.can.update;
-    const onlyOneToolEnabled = (form.data.enabled_tools ?? []).length === 1;
 
     const providerOptions = props.providers.map((option) => ({
         id: option.value,
@@ -82,7 +73,7 @@ function AgentConfigEdit(props: AgentConfigEditPageProps) {
                             }}
                         />
 
-                        <Collapsible defaultOpen className="rounded-md border">
+                        <Collapsible className="rounded-md border">
                             <CollapsibleTrigger
                                 type="button"
                                 className={cn(
@@ -91,12 +82,7 @@ function AgentConfigEdit(props: AgentConfigEditPageProps) {
                                     '[&[data-state=open]>svg]:rotate-180',
                                 )}
                             >
-                                <span>
-                                    Herramientas
-                                    <span className="text-muted-foreground ml-1.5 font-normal">
-                                        ({enabledToolsCount} activas)
-                                    </span>
-                                </span>
+                                <span>Herramientas</span>
                                 <ChevronDown
                                     className="text-muted-foreground size-4 shrink-0 transition-transform duration-200"
                                     aria-hidden
@@ -105,19 +91,7 @@ function AgentConfigEdit(props: AgentConfigEditPageProps) {
                             <CollapsibleContent className="border-t px-2 pb-2 pt-1">
                                 <ul className="space-y-1">
                                     {props.tools.map((tool) => (
-                                        <ToolSwitchRow
-                                            key={tool.slug}
-                                            tool={tool}
-                                            enabled={isToolEnabled(tool.slug)}
-                                            disabled={
-                                                !canUpdate ||
-                                                (isToolEnabled(tool.slug) &&
-                                                    onlyOneToolEnabled)
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                toggleTool(tool.slug, checked)
-                                            }
-                                        />
+                                        <ToolInfoRow key={tool.slug} tool={tool} />
                                     ))}
                                 </ul>
                                 {form.errors.enabled_tools ? (
@@ -169,39 +143,13 @@ function PageHeader() {
     );
 }
 
-type ToolSwitchRowProps = {
-    tool: AgentToolDefinition;
-    enabled: boolean;
-    disabled: boolean;
-    onCheckedChange: (checked: boolean) => void;
-};
-
-function ToolSwitchRow({
-    tool,
-    enabled,
-    disabled,
-    onCheckedChange,
-}: ToolSwitchRowProps) {
+function ToolInfoRow({ tool }: { tool: AgentToolDefinition }) {
     return (
-        <li className="flex items-start justify-between gap-2 rounded-md px-1 py-1.5 hover:bg-muted/50">
-            <div className="min-w-0 flex-1">
-                <Label
-                    htmlFor={`tool-${tool.slug}`}
-                    className="cursor-pointer text-sm leading-snug font-medium"
-                >
-                    {tool.label}
-                </Label>
-                <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
-                    {tool.description}
-                </p>
-            </div>
-            <Switch
-                id={`tool-${tool.slug}`}
-                checked={enabled}
-                disabled={disabled}
-                onCheckedChange={onCheckedChange}
-                className="mt-0.5 shrink-0"
-            />
+        <li className="rounded-md px-1 py-1.5">
+            <p className="text-sm leading-snug font-medium">{tool.label}</p>
+            <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
+                {tool.description}
+            </p>
         </li>
     );
 }

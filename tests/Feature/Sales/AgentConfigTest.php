@@ -60,13 +60,34 @@ test('update persists agent config for selected company', function () {
     $config = SalesAgentConfig::query()->where('company_id', $company->id)->first();
 
     expect($config)->not->toBeNull()
-        ->and($config->enabled_tools)->toBe([
-            SalesAgentConfig::TOOL_GET_PRODUCTS,
-            SalesAgentConfig::TOOL_CREATE_ORDER,
-        ])
+        ->and($config->enabled_tools)->toBe(SalesAgentConfig::defaultEnabledTools())
         ->and($config->prompt)->toBe('Instrucciones personalizadas.')
         ->and($config->provider)->toBe(SalesAgentConfig::DEFAULT_PROVIDER)
         ->and($config->model)->toBe('gpt-4o-mini');
+});
+
+test('update always persists all tools even when a subset is submitted', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->root()->create();
+
+    SalesAgentConfig::factory()
+        ->for($company)
+        ->withEnabledTools([SalesAgentConfig::TOOL_GET_PRODUCTS])
+        ->create();
+
+    $this->actingAs($user)
+        ->withSession(withSelectedCompany($company))
+        ->put(route('sales.agent.update'), [
+            'enabled_tools' => [SalesAgentConfig::TOOL_GET_PRODUCTS],
+            'provider' => SalesAgentConfig::DEFAULT_PROVIDER,
+            'model' => SalesAgentConfig::defaultModel(),
+            'use_default_prompt' => true,
+        ])
+        ->assertRedirect(route('sales.agent.edit'));
+
+    $config = SalesAgentConfig::query()->where('company_id', $company->id)->first();
+
+    expect($config?->enabled_tools)->toBe(SalesAgentConfig::defaultEnabledTools());
 });
 
 test('update with use default prompt clears stored prompt', function () {
