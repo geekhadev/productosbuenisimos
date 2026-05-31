@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\CompanyAssignableRolesController;
 use App\Http\Controllers\Api\UserCompanyRoleAssignmentsController;
 use App\Http\Controllers\CompanySelectionController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\EnsureCompanySelected;
 use Illuminate\Support\Facades\Route;
 
@@ -16,7 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', EnsureCompanySelected::class])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::prefix('administration')->name('administration.')->group(function () {
         require __DIR__.'/administration.php';
