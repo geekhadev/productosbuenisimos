@@ -1,6 +1,6 @@
 import { Loader2, MessageSquarePlus, Send, UserX } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import type { ChatbotMessage } from '@/components/chatbot/types';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ChatbotMessage, ChatbotVideoAttachment } from '@/components/chatbot/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -31,10 +31,28 @@ export function ChatbotPanel({
 }: ChatbotPanelProps) {
     const [draft, setDraft] = useState('');
     const bottomRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const wasSendingRef = useRef(isSending);
+
+    const focusInput = useCallback(() => {
+        inputRef.current?.focus({ preventScroll: true });
+    }, []);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isSending]);
+
+    useEffect(() => {
+        focusInput();
+    }, [focusInput]);
+
+    useEffect(() => {
+        if (wasSendingRef.current && !isSending) {
+            focusInput();
+        }
+
+        wasSendingRef.current = isSending;
+    }, [focusInput, isSending]);
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -45,6 +63,7 @@ export function ChatbotPanel({
 
         onSend(draft);
         setDraft('');
+        focusInput();
     };
 
     return (
@@ -100,6 +119,7 @@ export function ChatbotPanel({
 
             <form className="flex gap-2 border-t border-border/60 p-4" onSubmit={handleSubmit}>
                 <Input
+                    ref={inputRef}
                     aria-label="Mensaje"
                     disabled={isSending}
                     maxLength={1000}
@@ -109,6 +129,7 @@ export function ChatbotPanel({
                 />
                 <Button
                     aria-label="Enviar mensaje"
+                    className="size-9 shrink-0"
                     disabled={isSending || draft.trim() === ''}
                     size="icon"
                     type="submit"
@@ -140,7 +161,34 @@ function ChatbotBubble({ message }: { message: ChatbotMessage }) {
                     </p>
                 ) : null}
                 <p className="whitespace-pre-wrap">{message.content}</p>
+                {message.attachments?.map((attachment, attachmentIndex) => (
+                    <ChatbotAttachment
+                        attachment={attachment}
+                        key={`${message.created_at}-attachment-${attachmentIndex}`}
+                    />
+                ))}
             </div>
+        </div>
+    );
+}
+
+function ChatbotAttachment({ attachment }: { attachment: ChatbotVideoAttachment }) {
+    if (attachment.type !== 'video') {
+        return null;
+    }
+
+    return (
+        <div className="mt-2 space-y-1">
+            <p className="text-xs font-medium opacity-80">{attachment.product_name}</p>
+            <video
+                className="max-h-64 w-full rounded-lg bg-black/10"
+                controls
+                playsInline
+                preload="metadata"
+                src={attachment.url}
+            >
+                Tu navegador no puede reproducir este video.
+            </video>
         </div>
     );
 }

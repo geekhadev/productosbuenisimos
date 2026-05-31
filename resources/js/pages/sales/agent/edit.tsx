@@ -27,7 +27,7 @@ function AgentConfigEdit(props: AgentConfigEditPageProps) {
     } = useAgentConfigForm(props);
 
     const canUpdate = props.can.update;
-    const onlyOneToolEnabled = form.data.enabled_tools.length === 1;
+    const onlyOneToolEnabled = (form.data.enabled_tools ?? []).length === 1;
 
     const providerOptions = props.providers.map((option) => ({
         id: option.value,

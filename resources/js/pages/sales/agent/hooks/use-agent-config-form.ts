@@ -16,10 +16,10 @@ function defaultModelForProvider(
 
 function buildFormDefaults(props: AgentConfigEditPageProps): AgentConfigFormData {
     return {
-        enabled_tools: props.enabledTools,
+        enabled_tools: props.enabledTools ?? [],
         provider: props.provider,
         model: props.model || defaultModelForProvider(props.providerModels, props.provider),
-        prompt: props.prompt,
+        prompt: props.prompt ?? '',
         use_default_prompt: !props.usesCustomPrompt,
     };
 }
@@ -41,11 +41,15 @@ export function useAgentConfigForm(props: AgentConfigEditPageProps) {
         setLayoutProps({ breadcrumbs });
     }, [breadcrumbs]);
 
-    const enabledToolsCount = form.data.enabled_tools.length;
+    const enabledTools = useMemo(
+        () => form.data.enabled_tools ?? [],
+        [form.data.enabled_tools],
+    );
+    const enabledToolsCount = enabledTools.length;
 
     const isToolEnabled = useCallback(
-        (slug: string) => form.data.enabled_tools.includes(slug),
-        [form.data.enabled_tools],
+        (slug: string) => enabledTools.includes(slug),
+        [enabledTools],
     );
 
     const toggleTool = useCallback(
@@ -54,7 +58,7 @@ export function useAgentConfigForm(props: AgentConfigEditPageProps) {
                 return;
             }
 
-            const current = form.data.enabled_tools;
+            const current = form.data.enabled_tools ?? [];
 
             if (enabled) {
                 if (current.includes(slug)) {
@@ -80,20 +84,22 @@ export function useAgentConfigForm(props: AgentConfigEditPageProps) {
 
     const onPromptChange = useCallback(
         (value: string) => {
-            form.setData({
+            form.setData((data) => ({
+                ...data,
                 prompt: value,
                 use_default_prompt: false,
-            });
+            }));
         },
         [form],
     );
 
     const onProviderChange = useCallback(
         (provider: string) => {
-            form.setData({
+            form.setData((data) => ({
+                ...data,
                 provider,
                 model: defaultModelForProvider(props.providerModels, provider),
-            });
+            }));
         },
         [form, props.providerModels],
     );

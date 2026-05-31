@@ -140,6 +140,38 @@ test('deleting an image removes database record and file', function () {
         ->and(Storage::disk('public')->exists($media->path))->toBeFalse();
 });
 
+test('invalid php upload for video returns a descriptive validation error', function () {
+    ['company' => $company, 'user' => $user, 'product' => $product] = productMediaFixture();
+
+    $path = storage_path('app/temp/test-video.mp4');
+    if (! is_dir(dirname($path))) {
+        mkdir(dirname($path), 0755, true);
+    }
+    file_put_contents($path, 'fake-video');
+
+    $invalidUpload = new UploadedFile(
+        $path,
+        'clip.mp4',
+        'video/mp4',
+        UPLOAD_ERR_INI_SIZE,
+        false,
+    );
+
+    $response = $this->actingAs($user)
+        ->withSession(withSelectedCompany($company))
+        ->postJson(route('stock.products.video.store', $product), [
+            'video' => $invalidUpload,
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('video');
+
+    expect($response->json('errors.video.0'))
+        ->toContain('límite de subida del servidor')
+        ->toContain('200 MB');
+
+    @unlink($path);
+});
+
 test('uploading a new video replaces the previous one', function () {
     ['company' => $company, 'user' => $user, 'product' => $product] = productMediaFixture();
 

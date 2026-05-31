@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Stock;
 
 use App\Enums\Stock\ProductMediaType;
+use App\Http\Requests\Concerns\HandlesInvalidPhpUploads;
 use App\Models\Stock\Product;
 use App\Support\SelectedCompanySession;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -12,6 +13,8 @@ use Illuminate\Validation\Validator;
 
 class UploadProductImagesRequest extends FormRequest
 {
+    use HandlesInvalidPhpUploads;
+
     public function authorize(): bool
     {
         $companyId = SelectedCompanySession::selectedCompanyId($this);
@@ -26,8 +29,19 @@ class UploadProductImagesRequest extends FormRequest
     {
         return [
             'images' => ['required', 'array', 'min:1', 'max:5'],
-            'images.*' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'images.*' => [
+                'required',
+                'file',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:'.(int) config('media.image.max_kb', 10240),
+            ],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->rejectInvalidPhpUploadList('images', '10 MB');
     }
 
     public function withValidator(Validator $validator): void

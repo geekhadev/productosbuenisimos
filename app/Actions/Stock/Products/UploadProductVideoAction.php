@@ -20,10 +20,14 @@ class UploadProductVideoAction
     {
         $disk = (string) config('media.disk', 'public');
         $uploader = new MediaUploader;
-        $extension = $this->extensionForMime($file->getMimeType() ?? '');
+        $mimeType = $file->getMimeType()
+            ?? $file->getClientMimeType()
+            ?? 'video/mp4';
+        $originalName = $file->getClientOriginalName();
+        $extension = $this->extensionForMime($mimeType);
         $tempPath = $this->storeTemporarily($file, $extension);
 
-        return DB::transaction(function () use ($product, $file, $disk, $uploader, $tempPath): array {
+        return DB::transaction(function () use ($product, $disk, $uploader, $tempPath, $mimeType, $originalName): array {
             $existing = $product->media()
                 ->where('type', ProductMediaType::Video)
                 ->first();
@@ -50,9 +54,9 @@ class UploadProductVideoAction
                 'path' => $storedPath,
                 'sort_order' => 0,
                 'disk' => $disk,
-                'mime_type' => $file->getMimeType() ?? 'video/mp4',
+                'mime_type' => $mimeType,
                 'size' => $size,
-                'original_name' => $file->getClientOriginalName(),
+                'original_name' => $originalName,
             ]);
 
             $product->load('media');
