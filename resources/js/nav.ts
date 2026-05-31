@@ -2,7 +2,6 @@ import {
     Boxes,
     Building2,
     Globe,
-    KeyRound,
     LayoutGrid,
     MapPin,
     Package,
@@ -17,9 +16,6 @@ import {
     Warehouse,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
-import { index as modulesIndex } from '@/routes/administration/modules';
-import { index as permissionsIndex } from '@/routes/administration/permissions';
-import { index as systemsIndex } from '@/routes/administration/systems';
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
@@ -38,27 +34,6 @@ export const mainNavItems: NavItem[] = [
         title: 'Panel',
         href: dashboard(),
         icon: LayoutGrid,
-    },
-    {
-        title: 'Administración',
-        icon: Boxes,
-        items: [
-            {
-                title: 'Sistemas',
-                href: systemsIndex(),
-                icon: Boxes,
-            },
-            {
-                title: 'Módulos',
-                href: modulesIndex(),
-                icon: Package,
-            },
-            {
-                title: 'Permisos',
-                href: permissionsIndex(),
-                icon: KeyRound,
-            },
-        ],
     },
     {
         title: 'Stock',
