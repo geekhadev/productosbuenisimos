@@ -17,7 +17,6 @@
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
-        "libredte/libredte-lib-core": "^24.1",
         "predis/predis": "^3.4"
     },
     "require-dev": {
