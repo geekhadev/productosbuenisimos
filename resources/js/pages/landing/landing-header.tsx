@@ -31,16 +31,10 @@ export function LandingHeader({ canRegister }: LandingSectionProps) {
                     aria-label="Secciones"
                 >
                     <a
-                        href="#inicio"
-                        className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                    >
-                        Inicio
-                    </a>
-                    <a
                         href="#destacados"
                         className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
-                        Destacados
+                        Tienda
                     </a>
                 </nav>
                 <div className="flex items-center gap-2 sm:gap-3">
