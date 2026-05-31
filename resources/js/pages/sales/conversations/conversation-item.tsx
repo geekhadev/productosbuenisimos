@@ -38,6 +38,9 @@ function contactTypeLabel(item: ConversationListItem): string {
     return CONTACT_TYPE_LABELS[item.contact_type] ?? item.contact_type;
 }
 
+const listBadgeClass =
+    'h-5 shrink-0 px-1.5 text-[10px] leading-none font-normal';
+
 export function ConversationItem({ item, isSelected }: ConversationItemProps) {
     const activityLabel = new Date(item.last_activity_at).toLocaleString([], {
         day: '2-digit',
@@ -51,27 +54,29 @@ export function ConversationItem({ item, isSelected }: ConversationItemProps) {
             href={conversationShow.url(item.id)}
             preserveScroll
             className={cn(
-                'block border-b border-border/60 px-4 py-3 transition-colors hover:bg-muted/50',
+                'flex items-center gap-2 border-b border-border/60 px-2 py-2 transition-colors hover:bg-muted/50',
                 isSelected && 'bg-muted',
             )}
         >
-            <div className="flex items-start justify-between gap-2">
-                <p className="truncate text-sm font-medium">{item.contact_name}</p>
-                <span className="shrink-0 text-[10px] text-muted-foreground">
-                    {activityLabel}
-                </span>
-            </div>
-            <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <Badge variant={contactTypeBadgeVariant(item.contact_type)}>
+            <p className="min-w-0 flex items-center gap-2 flex-1 truncate text-sm font-medium">
+                <Badge
+                    variant={contactTypeBadgeVariant(item.contact_type)}
+                    className={listBadgeClass}
+                >
                     {contactTypeLabel(item)}
                 </Badge>
-                <SourceBadge source={item.source} showLabel={false} />
+                {item.contact_name}
+            </p>
+            <div className="flex shrink-0 items-center gap-1">
+                <SourceBadge
+                    source={item.source}
+                    showLabel={false}
+                    className={cn(listBadgeClass, 'w-5 justify-center px-0')}
+                />
             </div>
-            {/* {item.last_message_preview ? (
-                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                    {item.last_message_preview}
-                </p>
-            ) : null} */}
+            <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                {activityLabel}
+            </span>
         </Link>
     );
 }
