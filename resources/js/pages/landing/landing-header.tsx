@@ -50,9 +50,6 @@ export function LandingHeader({ canRegister }: LandingSectionProps) {
                         </Button>
                     ) : (
                         <>
-                            <Button variant="ghost" size="sm" asChild>
-                                <Link href={login()}>Iniciar sesión</Link>
-                            </Button>
                             {canRegister ? (
                                 <Button size="sm" asChild>
                                     <Link href="/register">Crear cuenta</Link>
