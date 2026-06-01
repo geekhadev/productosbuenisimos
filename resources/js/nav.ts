@@ -10,6 +10,7 @@ import {
     BrainCircuit,
     ClipboardList,
     Contact,
+    MessageSquare,
     MessageSquareText,
     ShoppingCart,
     UserRound,
@@ -22,6 +23,7 @@ import { index as companiesIndex } from '@/routes/configuration/companies';
 import { edit as fulfillmentProvidersEdit } from '@/routes/configuration/fulfillment-providers';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
+import { edit as whatsappProvidersEdit } from '@/routes/configuration/whatsapp-providers';
 import { edit as agentEdit } from '@/routes/sales/agent';
 import { index as conversationsIndex } from '@/routes/sales/conversations';
 import { index as customersIndex } from '@/routes/sales/customers';
@@ -136,6 +138,12 @@ export const mainNavItems: NavItem[] = [
                 href: fulfillmentProvidersEdit(),
                 icon: Package,
                 permission: 'configuration.fulfillment-providers.list',
+            },
+            {
+                title: 'Prov. WhatsApp',
+                href: whatsappProvidersEdit(),
+                icon: MessageSquare,
+                permission: 'configuration.whatsapp-providers.list',
             },
         ],
     },

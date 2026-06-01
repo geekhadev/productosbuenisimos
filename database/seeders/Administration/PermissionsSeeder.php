@@ -70,6 +70,14 @@ class PermissionsSeeder extends Seeder
                             ['permission_name' => 'Actualizar proveedores de fulfillment', 'permission_slug' => 'update'],
                         ],
                     ],
+                    [
+                        'module_name' => 'Proveedores de WhatsApp',
+                        'module_slug' => 'whatsapp-providers',
+                        'permissions' => [
+                            ['permission_name' => 'Listar proveedores de WhatsApp', 'permission_slug' => 'list'],
+                            ['permission_name' => 'Actualizar proveedores de WhatsApp', 'permission_slug' => 'update'],
+                        ],
+                    ],
                 ],
             ],
             [
