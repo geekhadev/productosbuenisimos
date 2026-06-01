@@ -62,6 +62,14 @@ class PermissionsSeeder extends Seeder
                             ['permission_name' => 'Actualizar proveedores de IA', 'permission_slug' => 'update'],
                         ],
                     ],
+                    [
+                        'module_name' => 'Proveedores de fulfillment',
+                        'module_slug' => 'fulfillment-providers',
+                        'permissions' => [
+                            ['permission_name' => 'Listar proveedores de fulfillment', 'permission_slug' => 'list'],
+                            ['permission_name' => 'Actualizar proveedores de fulfillment', 'permission_slug' => 'update'],
+                        ],
+                    ],
                 ],
             ],
             [

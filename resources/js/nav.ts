@@ -19,6 +19,7 @@ import {
 import { dashboard } from '@/routes';
 import { edit as aiProvidersEdit } from '@/routes/configuration/ai-providers';
 import { index as companiesIndex } from '@/routes/configuration/companies';
+import { edit as fulfillmentProvidersEdit } from '@/routes/configuration/fulfillment-providers';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
 import { edit as agentEdit } from '@/routes/sales/agent';
@@ -125,10 +126,16 @@ export const mainNavItems: NavItem[] = [
                 icon: Users,
             },
             {
-                title: 'Proveedores de IA',
+                title: 'Prov. IA',
                 href: aiProvidersEdit(),
                 icon: BrainCircuit,
                 permission: 'configuration.ai-providers.list',
+            },
+            {
+                title: 'Prov. fulfillment',
+                href: fulfillmentProvidersEdit(),
+                icon: Package,
+                permission: 'configuration.fulfillment-providers.list',
             },
         ],
     },

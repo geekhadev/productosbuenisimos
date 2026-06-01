@@ -9,6 +9,7 @@ use App\Models\Administration\Permission;
 use App\Models\Administration\System;
 use App\Models\Company;
 use App\Models\Configuration\AiProviderCredential;
+use App\Models\Configuration\FulfillmentProviderCredential;
 use App\Models\Configuration\Role;
 use App\Models\Public\ChatbotConversation;
 use App\Models\Sales\Customer;
@@ -23,6 +24,7 @@ use App\Policies\Administration\PermissionsPolicy;
 use App\Policies\Administration\SystemPolicy;
 use App\Policies\Configuration\AiProvidersPolicy;
 use App\Policies\Configuration\CompaniesPolicy;
+use App\Policies\Configuration\FulfillmentProvidersPolicy;
 use App\Policies\Configuration\RolesPolicy;
 use App\Policies\Sales\AgentConfigPolicy;
 use App\Policies\Sales\ConversationsPolicy;
@@ -33,6 +35,7 @@ use App\Policies\Shared\CountriesPolicy;
 use App\Policies\Shared\StatesPolicy;
 use App\Policies\Stock\ProductPolicy;
 use App\Support\AiConfigurationBridge;
+use App\Support\FulfillmentConfigurationBridge;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Date;
@@ -68,9 +71,13 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        $this->app->booted(fn (): mixed => AiConfigurationBridge::apply());
+        $this->app->booted(function (): void {
+            AiConfigurationBridge::apply();
+            FulfillmentConfigurationBridge::apply();
+        });
 
         Gate::policy(AiProviderCredential::class, AiProvidersPolicy::class);
+        Gate::policy(FulfillmentProviderCredential::class, FulfillmentProvidersPolicy::class);
         Gate::policy(Company::class, CompaniesPolicy::class);
         Gate::policy(Module::class, ModulesPolicy::class);
         Gate::policy(Permission::class, PermissionsPolicy::class);
