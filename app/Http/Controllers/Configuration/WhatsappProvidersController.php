@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Configuration;
 
+use App\Actions\Configuration\WhatsappProviders\UpdateWhatsappDefaultProviderAction;
 use App\Actions\Configuration\WhatsappProviders\UpdateWhatsappProviderCredentialAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Configuration\UpdateWhatsappDefaultProviderRequest;
 use App\Http\Requests\Configuration\UpdateWhatsappProviderCredentialRequest;
 use App\Models\Configuration\WhatsappProviderCredential;
+use App\Models\Configuration\WhatsappSetting;
 use App\Models\User;
 use App\Support\WhatsappConfigurationBridge;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +27,10 @@ class WhatsappProvidersController extends Controller
 
         return Inertia::render('configuration/whatsapp-providers/edit', [
             'providers' => WhatsappConfigurationBridge::providersForFrontend(),
+            'defaultProvider' => WhatsappConfigurationBridge::resolveDefaultProvider(
+                WhatsappSetting::instance()->default_provider,
+            ),
+            'defaultProviderOptions' => WhatsappConfigurationBridge::defaultProviderOptions(),
             'can' => [
                 'update' => $user->can('update', WhatsappProviderCredential::class),
             ],
@@ -45,6 +52,19 @@ class WhatsappProvidersController extends Controller
         $action->execute($provider, $request->credentials());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Credencial guardada.']);
+
+        return to_route('configuration.whatsapp-providers.edit');
+    }
+
+    public function updateDefaultProvider(
+        UpdateWhatsappDefaultProviderRequest $request,
+        UpdateWhatsappDefaultProviderAction $action,
+    ): RedirectResponse {
+        $this->authorize('update', WhatsappProviderCredential::class);
+
+        $action->execute($request->provider());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Proveedor predeterminado actualizado.']);
 
         return to_route('configuration.whatsapp-providers.edit');
     }

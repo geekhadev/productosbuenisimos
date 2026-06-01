@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Configuration;
 
+use App\Actions\Configuration\AiProviders\UpdateAiDefaultProviderAction;
 use App\Actions\Configuration\AiProviders\UpdateAiProviderCredentialAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Configuration\UpdateAiDefaultProviderRequest;
 use App\Http\Requests\Configuration\UpdateAiProviderCredentialRequest;
 use App\Models\Configuration\AiProviderCredential;
+use App\Models\Configuration\AiSetting;
 use App\Models\User;
 use App\Support\AiConfigurationBridge;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +27,10 @@ class AiProvidersController extends Controller
 
         return Inertia::render('configuration/ai-providers/edit', [
             'providers' => AiConfigurationBridge::providersForFrontend(),
+            'defaultProvider' => AiConfigurationBridge::resolveDefaultProvider(
+                AiSetting::instance()->default_provider,
+            ),
+            'defaultProviderOptions' => AiConfigurationBridge::defaultProviderOptions(),
             'can' => [
                 'update' => $user->can('update', AiProviderCredential::class),
             ],
@@ -45,6 +52,19 @@ class AiProvidersController extends Controller
         $action->execute($provider, $request->key());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Credencial guardada.']);
+
+        return to_route('configuration.ai-providers.edit');
+    }
+
+    public function updateDefaultProvider(
+        UpdateAiDefaultProviderRequest $request,
+        UpdateAiDefaultProviderAction $action,
+    ): RedirectResponse {
+        $this->authorize('update', AiProviderCredential::class);
+
+        $action->execute($request->provider());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Proveedor predeterminado actualizado.']);
 
         return to_route('configuration.ai-providers.edit');
     }

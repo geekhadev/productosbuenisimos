@@ -9,9 +9,10 @@ export function WhatsappProvidersSidebar() {
                 para recibir y enviar mensajes del agente de ventas.
             </p>
             <p className="text-muted-foreground text-sm">
-                Las credenciales se guardan cifradas en la base de datos. Solo
-                se mostrarán los últimos caracteres de los campos secretos y la
-                fecha de actualización en el listado.
+                Las credenciales se guardan cifradas en la base de datos. Marca
+                con el radio el proveedor predeterminado en el listado; solo se
+                mostrarán los últimos caracteres de los campos secretos y la
+                fecha de actualización.
             </p>
         </div>
     );

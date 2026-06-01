@@ -2,17 +2,26 @@ import { DateDisplay } from '@/components/custom/date-display';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AiProviderDefinition } from '@/pages/configuration/ai-providers/types';
+import { DefaultProviderRadio } from '@/pages/configuration/shared/default-provider-radio';
 
 type ProviderCredentialRowProps = {
     provider: AiProviderDefinition;
     canUpdate: boolean;
     onModify: (provider: AiProviderDefinition) => void;
+    defaultProvider: string | null;
+    isDefaultSelectable: boolean;
+    isDefaultSelectionDisabled: boolean;
+    onSelectDefault: (slug: string) => void;
 };
 
 export function ProviderCredentialRow({
     provider,
     canUpdate,
     onModify,
+    defaultProvider,
+    isDefaultSelectable,
+    isDefaultSelectionDisabled,
+    onSelectDefault,
 }: ProviderCredentialRowProps) {
     const hasPanelMetadata =
         provider.keyConfigured &&
@@ -21,9 +30,19 @@ export function ProviderCredentialRow({
 
     return (
         <div className="flex flex-col gap-3 border-b border-border pb-4 last:border-b-0 last:pb-0 lg:flex-row lg:items-center lg:gap-4">
-            <p className="w-full shrink-0 text-sm font-medium lg:w-36">
-                {provider.label}
-            </p>
+            <div className="flex items-center gap-3 lg:w-44">
+                <DefaultProviderRadio
+                    slug={provider.slug}
+                    label={provider.label}
+                    name="default-ai-provider"
+                    checked={defaultProvider === provider.slug}
+                    disabled={
+                        !isDefaultSelectable || isDefaultSelectionDisabled
+                    }
+                    onSelect={onSelectDefault}
+                />
+                <p className="text-sm font-medium">{provider.label}</p>
+            </div>
 
             <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
                 {hasPanelMetadata ? (

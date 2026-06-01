@@ -9,9 +9,10 @@ export function AiProvidersSidebar() {
                 artificial usados por el agente de ventas y el chatbot público.
             </p>
             <p className="text-muted-foreground text-sm">
-                Las claves se guardan cifradas en la base de datos. El agente de
-                ventas elige el proveedor en su propia configuración entre los
-                que tengan credencial disponible aquí.
+                Las claves se guardan cifradas en la base de datos. Marca con el
+                radio el proveedor predeterminado en el listado; el agente de
+                ventas también puede elegir proveedor en su propia configuración
+                entre los que tengan credencial disponible aquí.
             </p>
         </div>
     );

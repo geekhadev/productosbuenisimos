@@ -3,6 +3,7 @@
 use App\Models\Administration\Permission;
 use App\Models\Company;
 use App\Models\Configuration\WhatsappProviderCredential;
+use App\Models\Configuration\WhatsappSetting;
 use App\Models\User;
 use App\Support\WhatsappConfigurationBridge;
 use Database\Seeders\Administration\PermissionsSeeder;
@@ -32,7 +33,9 @@ test('edit page renders whatsapp providers configuration', function () {
             ->where('providers.0.slug', 'twilio')
             ->where('providers.0.label', 'Twilio')
             ->where('providers.1.slug', 'meta')
-            ->where('providers.1.label', 'Meta'));
+            ->where('providers.1.label', 'Meta')
+            ->has('defaultProvider')
+            ->has('defaultProviderOptions'));
 });
 
 test('update twilio credential stores encrypted credentials metadata and applies config', function () {
@@ -197,4 +200,84 @@ test('update twilio credential can change text fields without resubmitting secre
             'auth_token' => '···oken',
         ])
         ->and($credential?->credentials_updated_at?->isToday())->toBeTrue();
+});
+
+test('update default provider stores selection and applies config', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->root()->create();
+
+    WhatsappProviderCredential::query()->create([
+        'provider' => 'twilio',
+        'credentials' => [
+            'account_sid' => 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+            'auth_token' => 'twilio-auth-token-value',
+            'from_number' => 'whatsapp:+14155238886',
+        ],
+        'secret_field_hints' => [
+            'auth_token' => WhatsappProviderCredential::hintFromSecret('twilio-auth-token-value'),
+        ],
+        'credentials_updated_at' => now(),
+    ]);
+
+    WhatsappProviderCredential::query()->create([
+        'provider' => 'meta',
+        'credentials' => [
+            'access_token' => 'meta-access-token-value',
+            'phone_number_id' => '123456789012345',
+            'verify_token' => 'meta-verify-token',
+            'app_secret' => 'meta-app-secret-value',
+        ],
+        'secret_field_hints' => [
+            'access_token' => WhatsappProviderCredential::hintFromSecret('meta-access-token-value'),
+            'verify_token' => WhatsappProviderCredential::hintFromSecret('meta-verify-token'),
+            'app_secret' => WhatsappProviderCredential::hintFromSecret('meta-app-secret-value'),
+        ],
+        'credentials_updated_at' => now(),
+    ]);
+
+    WhatsappConfigurationBridge::apply();
+
+    $this->actingAs($user)
+        ->withSession(withSelectedCompany($company))
+        ->put(route('configuration.whatsapp-providers.default-provider.update'), [
+            'provider' => 'meta',
+        ])
+        ->assertRedirect(route('configuration.whatsapp-providers.edit'));
+
+    expect(WhatsappSetting::instance()->default_provider)->toBe('meta');
+
+    WhatsappConfigurationBridge::apply();
+
+    expect(config('whatsapp.driver'))->toBe('meta');
+});
+
+test('default provider options only include providers with runtime credentials', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->root()->create();
+
+    WhatsappProviderCredential::query()->create([
+        'provider' => 'twilio',
+        'credentials' => [
+            'account_sid' => 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+            'auth_token' => 'twilio-auth-token-value',
+            'from_number' => 'whatsapp:+14155238886',
+        ],
+        'secret_field_hints' => [
+            'auth_token' => WhatsappProviderCredential::hintFromSecret('twilio-auth-token-value'),
+        ],
+        'credentials_updated_at' => now(),
+    ]);
+
+    WhatsappConfigurationBridge::apply();
+
+    $this->actingAs($user)
+        ->withSession(withSelectedCompany($company))
+        ->get(route('configuration.whatsapp-providers.edit'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('configuration/whatsapp-providers/edit')
+            ->where('defaultProvider', 'twilio')
+            ->has('defaultProviderOptions', 1)
+            ->where('defaultProviderOptions.0.value', 'twilio')
+            ->where('defaultProviderOptions.0.label', 'Twilio'));
 });

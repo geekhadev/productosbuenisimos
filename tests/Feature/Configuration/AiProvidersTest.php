@@ -3,6 +3,7 @@
 use App\Models\Administration\Permission;
 use App\Models\Company;
 use App\Models\Configuration\AiProviderCredential;
+use App\Models\Configuration\AiSetting;
 use App\Models\User;
 use App\Support\AiConfigurationBridge;
 use App\Support\ChatbotAiConfiguration;
@@ -30,8 +31,8 @@ test('edit page renders ai providers configuration', function () {
             ->component('configuration/ai-providers/edit')
             ->where('can.update', true)
             ->has('providers', count(AiProviderCredential::manageableProviderSlugs()))
-            ->missing('defaultProvider')
-            ->missing('defaultProviderOptions'));
+            ->has('defaultProvider')
+            ->has('defaultProviderOptions'));
 });
 
 test('update credential stores encrypted key metadata and applies config', function () {
@@ -122,4 +123,63 @@ test('update credential replaces previous key and refreshes metadata', function 
     expect($credential?->credentials)->toBe(['key' => 'sk-brand-new-key'])
         ->and($credential?->key_last_chars)->toBe('···-key')
         ->and($credential?->key_updated_at?->isToday())->toBeTrue();
+});
+
+test('update default provider stores selection and applies config', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->root()->create();
+
+    AiProviderCredential::query()->create([
+        'provider' => 'openai',
+        'credentials' => ['key' => 'sk-openai-key'],
+        'key_last_chars' => AiProviderCredential::hintFromKey('sk-openai-key'),
+        'key_updated_at' => now(),
+    ]);
+
+    AiProviderCredential::query()->create([
+        'provider' => 'anthropic',
+        'credentials' => ['key' => 'sk-anthropic-key'],
+        'key_last_chars' => AiProviderCredential::hintFromKey('sk-anthropic-key'),
+        'key_updated_at' => now(),
+    ]);
+
+    AiConfigurationBridge::apply();
+
+    $this->actingAs($user)
+        ->withSession(withSelectedCompany($company))
+        ->put(route('configuration.ai-providers.default-provider.update'), [
+            'provider' => 'anthropic',
+        ])
+        ->assertRedirect(route('configuration.ai-providers.edit'));
+
+    expect(AiSetting::instance()->default_provider)->toBe('anthropic');
+
+    AiConfigurationBridge::apply();
+
+    expect(config('ai.default'))->toBe('anthropic');
+});
+
+test('default provider options only include providers with runtime credentials', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->root()->create();
+
+    AiProviderCredential::query()->create([
+        'provider' => 'openai',
+        'credentials' => ['key' => 'sk-openai-key'],
+        'key_last_chars' => AiProviderCredential::hintFromKey('sk-openai-key'),
+        'key_updated_at' => now(),
+    ]);
+
+    AiConfigurationBridge::apply();
+
+    $this->actingAs($user)
+        ->withSession(withSelectedCompany($company))
+        ->get(route('configuration.ai-providers.edit'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('configuration/ai-providers/edit')
+            ->where('defaultProvider', 'openai')
+            ->has('defaultProviderOptions', 1)
+            ->where('defaultProviderOptions.0.value', 'openai')
+            ->where('defaultProviderOptions.0.label', 'OpenAI'));
 });

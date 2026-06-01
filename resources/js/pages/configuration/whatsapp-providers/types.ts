@@ -20,7 +20,14 @@ export type ProviderCredentialFormData = Record<string, string>;
 
 export type WhatsappProvidersEditPageProps = {
     providers: WhatsappProviderDefinition[];
+    defaultProvider: string | null;
+    defaultProviderOptions: DefaultProviderOption[];
     can: {
         update: boolean;
     };
+};
+
+export type DefaultProviderOption = {
+    value: string;
+    label: string;
 };

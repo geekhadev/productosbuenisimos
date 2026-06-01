@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Configuration\AiProviderCredential;
+use App\Models\Configuration\AiSetting;
 use Illuminate\Support\Facades\Schema;
 
 final class AiConfigurationBridge
@@ -41,6 +42,55 @@ final class AiConfigurationBridge
         ));
     }
 
+    /**
+     * @return list<string>
+     */
+    public static function selectableDefaultProviderSlugs(): array
+    {
+        return array_values(array_filter(
+            AiProviderCredential::manageableProviderSlugs(),
+            fn (string $slug): bool => filled(config("ai.providers.{$slug}.key")),
+        ));
+    }
+
+    public static function resolveDefaultProvider(?string $stored = null): ?string
+    {
+        $selectable = self::selectableDefaultProviderSlugs();
+
+        if ($selectable === []) {
+            return null;
+        }
+
+        if ($stored !== null && in_array($stored, $selectable, true)) {
+            return $stored;
+        }
+
+        $configDefault = (string) config('ai.default', 'openai');
+
+        if (in_array($configDefault, $selectable, true)) {
+            return $configDefault;
+        }
+
+        return $selectable[0];
+    }
+
+    /**
+     * @return list<array{value: string, label: string}>
+     */
+    public static function defaultProviderOptions(): array
+    {
+        /** @var array<string, array{label: string}> $catalog */
+        $catalog = config('ai-providers-admin.providers', []);
+
+        return array_values(array_map(
+            fn (string $slug): array => [
+                'value' => $slug,
+                'label' => $catalog[$slug]['label'],
+            ],
+            self::selectableDefaultProviderSlugs(),
+        ));
+    }
+
     public static function apply(): void
     {
         if (! Schema::hasTable('configuration_ai_provider_credentials')) {
@@ -58,6 +108,16 @@ final class AiConfigurationBridge
 
                 config(["ai.providers.{$credential->provider}.{$key}" => $value]);
             }
+        }
+
+        if (! Schema::hasTable('configuration_ai_settings')) {
+            return;
+        }
+
+        $resolved = self::resolveDefaultProvider(AiSetting::instance()->default_provider);
+
+        if ($resolved !== null) {
+            config(['ai.default' => $resolved]);
         }
     }
 

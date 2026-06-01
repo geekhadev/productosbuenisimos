@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Configuration\WhatsappProviderCredential;
+use App\Models\Configuration\WhatsappSetting;
 use Illuminate\Support\Facades\Schema;
 
 final class WhatsappConfigurationBridge
@@ -14,6 +15,55 @@ final class WhatsappConfigurationBridge
         }
 
         return WhatsappProviderCredential::findForProvider($slug)?->hasStoredCredentials() ?? false;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function selectableDefaultProviderSlugs(): array
+    {
+        return array_values(array_filter(
+            WhatsappProviderCredential::manageableProviderSlugs(),
+            fn (string $slug): bool => self::providerIsRuntimeReady($slug),
+        ));
+    }
+
+    public static function resolveDefaultProvider(?string $stored = null): ?string
+    {
+        $selectable = self::selectableDefaultProviderSlugs();
+
+        if ($selectable === []) {
+            return null;
+        }
+
+        if ($stored !== null && in_array($stored, $selectable, true)) {
+            return $stored;
+        }
+
+        $configDefault = (string) config('whatsapp.driver', 'twilio');
+
+        if (in_array($configDefault, $selectable, true)) {
+            return $configDefault;
+        }
+
+        return $selectable[0];
+    }
+
+    /**
+     * @return list<array{value: string, label: string}>
+     */
+    public static function defaultProviderOptions(): array
+    {
+        /** @var array<string, array{label: string}> $catalog */
+        $catalog = config('whatsapp-providers-admin.providers', []);
+
+        return array_values(array_map(
+            fn (string $slug): array => [
+                'value' => $slug,
+                'label' => $catalog[$slug]['label'],
+            ],
+            self::selectableDefaultProviderSlugs(),
+        ));
     }
 
     public static function apply(): void
@@ -33,6 +83,16 @@ final class WhatsappConfigurationBridge
 
                 config(["whatsapp.{$credential->provider}.{$key}" => $value]);
             }
+        }
+
+        if (! Schema::hasTable('configuration_whatsapp_settings')) {
+            return;
+        }
+
+        $resolved = self::resolveDefaultProvider(WhatsappSetting::instance()->default_provider);
+
+        if ($resolved !== null) {
+            config(['whatsapp.driver' => $resolved]);
         }
     }
 
@@ -103,14 +163,21 @@ final class WhatsappConfigurationBridge
         );
     }
 
-    private static function providerConfiguredViaEnvironment(string $slug): bool
+    private static function providerIsRuntimeReady(string $slug): bool
     {
         foreach (WhatsappProviderCredential::fieldDefinitionsForProvider($slug) as $field => $definition) {
+            unset($definition);
+
             if (! filled(config("whatsapp.{$slug}.{$field}"))) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private static function providerConfiguredViaEnvironment(string $slug): bool
+    {
+        return self::providerIsRuntimeReady($slug);
     }
 }

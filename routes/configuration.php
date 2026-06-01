@@ -13,6 +13,8 @@ Route::resource('companies', CompaniesController::class)->except(['show']);
 Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::get('ai-providers', [AiProvidersController::class, 'edit'])->name('ai-providers.edit');
+Route::put('ai-providers/default-provider', [AiProvidersController::class, 'updateDefaultProvider'])
+    ->name('ai-providers.default-provider.update');
 Route::put('ai-providers/{provider}/credential', [AiProvidersController::class, 'updateCredential'])
     ->name('ai-providers.credential.update');
 
@@ -21,6 +23,8 @@ Route::put('fulfillment-providers/{provider}/credential', [FulfillmentProvidersC
     ->name('fulfillment-providers.credential.update');
 
 Route::get('whatsapp-providers', [WhatsappProvidersController::class, 'edit'])->name('whatsapp-providers.edit');
+Route::put('whatsapp-providers/default-provider', [WhatsappProvidersController::class, 'updateDefaultProvider'])
+    ->name('whatsapp-providers.default-provider.update');
 Route::put('whatsapp-providers/{provider}/credential', [WhatsappProvidersController::class, 'updateCredential'])
     ->name('whatsapp-providers.credential.update');
 
