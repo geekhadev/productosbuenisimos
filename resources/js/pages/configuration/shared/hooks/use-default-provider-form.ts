@@ -17,8 +17,14 @@ export function useDefaultProviderForm({
     });
 
     useEffect(() => {
-        form.setData('provider', defaultProvider ?? '');
-    }, [defaultProvider, form]);
+        const provider = defaultProvider ?? '';
+
+        if (form.data.provider !== provider) {
+            form.setData('provider', provider);
+        }
+        // Sync only when the server default changes, not on every form re-render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- form is intentionally omitted
+    }, [defaultProvider]);
 
     const submitProvider = useCallback(
         (provider: string) => {
