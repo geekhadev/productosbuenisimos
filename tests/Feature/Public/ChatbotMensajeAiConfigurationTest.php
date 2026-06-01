@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\Company;
+use App\Models\Configuration\AiProviderCredential;
 use App\Models\Public\ChatbotConversation;
+use App\Support\AiConfigurationBridge;
 use App\Support\ChatbotCompany;
 
 beforeEach(function () {
@@ -9,7 +11,9 @@ beforeEach(function () {
 });
 
 test('mensaje returns 503 when openai api key is not configured', function () {
-    config(['ai.providers.openai.key' => null]);
+    config(['ai.providers.openai.key' => 'sk-env-only']);
+    AiProviderCredential::query()->delete();
+    AiConfigurationBridge::apply();
 
     $company = ChatbotCompany::findOrFail();
     $conversation = ChatbotConversation::factory()->for($company)->create(['is_active' => true]);

@@ -8,6 +8,6 @@ final class ChatbotAiConfiguration
     {
         $provider = (string) config('ai.default', 'openai');
 
-        return filled(config("ai.providers.{$provider}.key"));
+        return AiConfigurationBridge::providerHasAvailableKey($provider);
     }
 }

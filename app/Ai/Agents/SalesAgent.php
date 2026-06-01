@@ -25,13 +25,13 @@ class SalesAgent implements Agent, Conversational, HasTools
     {
         $config = SalesAgentConfig::forCompany($this->companyId);
 
-        return $config?->provider ?? SalesAgentConfig::defaultProvider();
+        return SalesAgentConfig::resolveProvider($config?->provider);
     }
 
     public function model(): ?string
     {
         $config = SalesAgentConfig::forCompany($this->companyId);
-        $provider = $config?->provider ?? SalesAgentConfig::defaultProvider();
+        $provider = SalesAgentConfig::resolveProvider($config?->provider);
 
         return SalesAgentConfig::resolveModel($provider, $config?->model);
     }

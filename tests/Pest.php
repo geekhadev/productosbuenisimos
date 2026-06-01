@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Company;
+use App\Models\Configuration\AiProviderCredential;
+use App\Support\AiConfigurationBridge;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -58,4 +60,18 @@ function withSelectedCompany(Company $company): array
             'name' => $company->name,
         ],
     ];
+}
+
+function seedOpenAiProviderCredential(string $key = 'sk-test-openai-key'): void
+{
+    AiProviderCredential::query()->updateOrCreate(
+        ['provider' => 'openai'],
+        [
+            'credentials' => ['key' => $key],
+            'key_last_chars' => AiProviderCredential::hintFromKey($key),
+            'key_updated_at' => now(),
+        ],
+    );
+
+    AiConfigurationBridge::apply();
 }

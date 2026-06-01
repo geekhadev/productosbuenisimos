@@ -7,6 +7,7 @@ import {
     Package,
     Share2,
     Bot,
+    BrainCircuit,
     ClipboardList,
     Contact,
     MessageSquareText,
@@ -16,6 +17,7 @@ import {
     Warehouse,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
+import { edit as aiProvidersEdit } from '@/routes/configuration/ai-providers';
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
@@ -121,6 +123,12 @@ export const mainNavItems: NavItem[] = [
                 title: 'Usuarios',
                 href: usersIndex(),
                 icon: Users,
+            },
+            {
+                title: 'Proveedores de IA',
+                href: aiProvidersEdit(),
+                icon: BrainCircuit,
+                permission: 'configuration.ai-providers.list',
             },
         ],
     },

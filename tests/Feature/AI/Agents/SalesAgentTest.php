@@ -17,7 +17,7 @@ test('sales agent loads instructions from prompt file', function () {
     $instructions = SalesAgent::make(companyId: $companyId)->instructions();
 
     expect($instructions)
-        ->toContain('asistente de ventas')
+        ->toContain('asesor de ventas')
         ->toContain('get_customer_by_phone')
         ->toContain('create_order');
 });

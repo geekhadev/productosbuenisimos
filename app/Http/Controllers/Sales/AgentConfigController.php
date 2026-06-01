@@ -29,15 +29,14 @@ class AgentConfigController extends Controller
         assert($user instanceof User);
 
         $config = SalesAgentConfig::forCompany($companyId);
+        $provider = SalesAgentConfig::resolveProvider($config?->provider);
 
         return Inertia::render('sales/agent/edit', [
             'tools' => SalesAgentConfig::toolsForFrontend(),
             'enabledTools' => $config?->enabled_tools ?? SalesAgentConfig::defaultEnabledTools(),
-            'provider' => $config?->provider ?? SalesAgentConfig::defaultProvider(),
-            'model' => SalesAgentConfig::resolveModel(
-                $config?->provider ?? SalesAgentConfig::defaultProvider(),
-                $config?->model,
-            ) ?? '',
+            'provider' => $provider,
+            'model' => SalesAgentConfig::resolveModel($provider, $config?->model) ?? '',
+            'hasConfiguredProviders' => SalesAgentConfig::configuredProviders() !== [],
             'providers' => SalesAgentConfig::providersForFrontend(),
             'providerModels' => SalesAgentConfig::providerModelsForFrontend(),
             'prompt' => filled($config?->prompt)

@@ -54,6 +54,14 @@ class PermissionsSeeder extends Seeder
                         'module_slug' => 'companies',
                         'permissions' => $permissions_crud,
                     ],
+                    [
+                        'module_name' => 'Proveedores de IA',
+                        'module_slug' => 'ai-providers',
+                        'permissions' => [
+                            ['permission_name' => 'Listar proveedores de IA', 'permission_slug' => 'list'],
+                            ['permission_name' => 'Actualizar proveedores de IA', 'permission_slug' => 'update'],
+                        ],
+                    ],
                 ],
             ],
             [

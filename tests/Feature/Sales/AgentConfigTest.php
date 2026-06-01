@@ -5,18 +5,81 @@ use App\Ai\Tools\CreateCustomer;
 use App\Ai\Tools\GetProducts;
 use App\Models\Administration\Permission;
 use App\Models\Company;
+use App\Models\Configuration\AiProviderCredential;
 use App\Models\Sales\SalesAgentConfig;
 use App\Models\User;
+use App\Support\AiConfigurationBridge;
 use Database\Seeders\Administration\PermissionsSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->seed(PermissionsSeeder::class);
+    seedOpenAiProviderCredential();
 });
 
 test('permissions seeder registers sales agent module', function () {
     expect(Permission::query()->where('slug', 'sales.agent.list')->exists())->toBeTrue()
         ->and(Permission::query()->where('slug', 'sales.agent.update')->exists())->toBeTrue();
+});
+
+test('edit page lists every sales agent provider that has a stored credential', function () {
+    AiProviderCredential::query()->create([
+        'provider' => 'gemini',
+        'credentials' => ['key' => 'gemini-key-12345678'],
+        'key_last_chars' => AiProviderCredential::hintFromKey('gemini-key-12345678'),
+        'key_updated_at' => now(),
+    ]);
+
+    $company = Company::factory()->create();
+    $user = User::factory()->root()->create();
+
+    $this->actingAs($user)
+        ->withSession(withSelectedCompany($company))
+        ->get(route('sales.agent.edit'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('sales/agent/edit')
+            ->where('hasConfiguredProviders', true)
+            ->has('providers', 2)
+            ->where('providers', fn ($providers) => collect($providers)
+                ->pluck('value')
+                ->sort()
+                ->values()
+                ->all() === ['gemini', 'openai']));
+});
+
+test('edit page only lists providers with stored credentials', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->root()->create();
+
+    config(['ai.providers.openai.key' => 'sk-from-env-only']);
+
+    $this->actingAs($user)
+        ->withSession(withSelectedCompany($company))
+        ->get(route('sales.agent.edit'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('sales/agent/edit')
+            ->where('hasConfiguredProviders', true)
+            ->has('providers', 1)
+            ->where('providers.0.value', 'openai'));
+});
+
+test('edit page shows no providers when none have stored credentials', function () {
+    AiProviderCredential::query()->delete();
+    AiConfigurationBridge::apply();
+
+    $company = Company::factory()->create();
+    $user = User::factory()->root()->create();
+
+    $this->actingAs($user)
+        ->withSession(withSelectedCompany($company))
+        ->get(route('sales.agent.edit'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('sales/agent/edit')
+            ->where('hasConfiguredProviders', false)
+            ->has('providers', 0));
 });
 
 test('edit page shows default tools and prompt when no config exists', function () {
@@ -166,7 +229,7 @@ test('sales agent falls back to defaults without config', function () {
     $company = Company::factory()->create();
     $agent = SalesAgent::make(companyId: $company->id);
 
-    expect($agent->instructions())->toContain('asistente de ventas')
+    expect($agent->instructions())->toContain('asesor de ventas')
         ->and($agent->provider())->toBe(SalesAgentConfig::defaultProvider())
         ->and($agent->model())->toBe(SalesAgentConfig::defaultModel());
 

@@ -3,6 +3,7 @@
 namespace App\Models\Sales;
 
 use App\Models\Company;
+use App\Support\AiConfigurationBridge;
 use Database\Factories\Sales\SalesAgentConfigFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -135,7 +136,27 @@ class SalesAgentConfig extends Model
 
     public static function defaultProvider(): string
     {
-        return self::DEFAULT_PROVIDER;
+        $available = self::configuredProviders();
+
+        if ($available === []) {
+            return self::DEFAULT_PROVIDER;
+        }
+
+        $configDefault = (string) config('ai.default', self::DEFAULT_PROVIDER);
+
+        if (in_array($configDefault, $available, true)) {
+            return $configDefault;
+        }
+
+        return $available[0];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function configuredProviders(): array
+    {
+        return AiConfigurationBridge::availableSalesAgentProviderSlugs();
     }
 
     /**
@@ -143,10 +164,18 @@ class SalesAgentConfig extends Model
      */
     public static function allowedProviders(): array
     {
-        /** @var array<string, array{label: string, models: list<array{value: string, label: string}>}> $providers */
-        $providers = config('sales-agent.providers', []);
+        return self::configuredProviders();
+    }
 
-        return array_keys($providers);
+    public static function resolveProvider(?string $provider): string
+    {
+        $available = self::configuredProviders();
+
+        if ($provider !== null && in_array($provider, $available, true)) {
+            return $provider;
+        }
+
+        return self::defaultProvider();
     }
 
     /**
@@ -181,17 +210,16 @@ class SalesAgentConfig extends Model
      */
     public static function providersForFrontend(): array
     {
-        /** @var array<string, array{label: string, models: list<array{value: string, label: string}>}> $providers */
-        $providers = config('sales-agent.providers', []);
+        /** @var array<string, array{label: string, models: list<array{value: string, label: string}>}> $catalog */
+        $catalog = config('sales-agent.providers', []);
 
-        return array_map(
-            fn (array $provider, string $key): array => [
-                'value' => $key,
-                'label' => $provider['label'],
+        return array_values(array_map(
+            fn (string $slug): array => [
+                'value' => $slug,
+                'label' => $catalog[$slug]['label'],
             ],
-            $providers,
-            array_keys($providers),
-        );
+            self::configuredProviders(),
+        ));
     }
 
     /**
@@ -202,9 +230,14 @@ class SalesAgentConfig extends Model
         /** @var array<string, array{label: string, models: list<array{value: string, label: string}>}> $providers */
         $providers = config('sales-agent.providers', []);
 
+        $configured = array_intersect_key(
+            $providers,
+            array_flip(self::configuredProviders()),
+        );
+
         return array_map(
             fn (array $provider): array => $provider['models'],
-            $providers,
+            $configured,
         );
     }
 

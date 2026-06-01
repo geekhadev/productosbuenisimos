@@ -44,19 +44,26 @@ function AgentConfigEdit(props: AgentConfigEditPageProps) {
                     className="flex h-[calc(100vh-170px)] flex-col gap-6 lg:flex-row lg:items-start lg:gap-8"
                 >
                     <aside className="w-full shrink-0 self-start space-y-4 border-b pb-6 lg:w-86 lg:border-r lg:border-b-0 lg:pb-0 lg:pr-6">
-                        <FormSelect
-                            label="Proveedor"
-                            error={form.errors.provider}
-                            options={providerOptions}
-                            selectProps={{
-                                id: 'agent-provider',
-                                name: 'provider',
-                                value: form.data.provider,
-                                disabled: !canUpdate,
-                                onChange: (e) =>
-                                    onProviderChange(e.target.value),
-                            }}
-                        />
+                        {props.hasConfiguredProviders ? (
+                            <FormSelect
+                                label="Proveedor"
+                                error={form.errors.provider}
+                                options={providerOptions}
+                                selectProps={{
+                                    id: 'agent-provider',
+                                    name: 'provider',
+                                    value: form.data.provider,
+                                    disabled: !canUpdate,
+                                    onChange: (e) =>
+                                        onProviderChange(e.target.value),
+                                }}
+                            />
+                        ) : (
+                            <p className="text-muted-foreground text-sm">
+                                No hay proveedores con credencial configurada. Agrega
+                                al menos una en Configuración → Proveedores de IA.
+                            </p>
+                        )}
 
                         <FormSelect
                             label="Modelo"
@@ -67,7 +74,10 @@ function AgentConfigEdit(props: AgentConfigEditPageProps) {
                                 id: 'agent-model',
                                 name: 'model',
                                 value: form.data.model,
-                                disabled: !canUpdate || modelOptions.length === 0,
+                                disabled:
+                                    !canUpdate ||
+                                    !props.hasConfiguredProviders ||
+                                    modelOptions.length === 0,
                                 onChange: (e) =>
                                     form.setData('model', e.target.value),
                             }}
@@ -105,7 +115,11 @@ function AgentConfigEdit(props: AgentConfigEditPageProps) {
                         <FormSubmitButton
                             icon={<Save />}
                             label="Guardar"
-                            disabled={!canUpdate || form.processing}
+                            disabled={
+                                !canUpdate ||
+                                !props.hasConfiguredProviders ||
+                                form.processing
+                            }
                             containerClassName="w-full"
                         />
                     </aside>

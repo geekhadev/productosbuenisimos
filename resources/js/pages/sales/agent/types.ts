@@ -29,6 +29,7 @@ export type AgentConfigEditPageProps = {
     model: string;
     providers: AgentProviderOption[];
     providerModels: Record<string, AgentModelOption[]>;
+    hasConfiguredProviders: boolean;
     prompt: string;
     usesCustomPrompt: boolean;
     can: {
