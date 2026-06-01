@@ -80,6 +80,20 @@ test('splitMessage keeps short messages as a single chunk', function () {
     expect($chunks)->toBe(['Mensaje corto']);
 });
 
+test('from number is normalized to whatsapp channel on construction', function () {
+    $driver = new TwilioWhatsappDriver(
+        accountSid: 'ACtest',
+        authToken: 'token',
+        fromNumber: '+14155238886',
+        shouldVerifyWebhook: false,
+    );
+
+    $fromNumber = new ReflectionProperty(TwilioWhatsappDriver::class, 'fromNumber');
+    $fromNumber->setAccessible(true);
+
+    expect($fromNumber->getValue($driver))->toBe('whatsapp:+14155238886');
+});
+
 test('formatWhatsappAddress prefixes destination numbers for twilio api', function () {
     $driver = new TwilioWhatsappDriver(
         accountSid: 'ACtest',

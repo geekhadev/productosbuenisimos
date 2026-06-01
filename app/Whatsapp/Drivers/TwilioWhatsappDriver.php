@@ -17,7 +17,9 @@ class TwilioWhatsappDriver implements WhatsappDriver
         private string $authToken,
         private string $fromNumber,
         private bool $shouldVerifyWebhook = true,
-    ) {}
+    ) {
+        $this->fromNumber = $this->formatWhatsappAddress($fromNumber);
+    }
 
     public function verifyWebhook(Request $request): void
     {

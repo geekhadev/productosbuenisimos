@@ -33,10 +33,6 @@ class ProcessIncomingWhatsappMessage implements ShouldQueue
             return;
         }
 
-        WhatsappProcessedMessage::query()->create([
-            'message_id' => $this->message->messageId,
-        ]);
-
         $result = $processor->process($this->message);
 
         $driver->sendTextMessage($this->message->phone, $result->reply);
@@ -50,6 +46,10 @@ class ProcessIncomingWhatsappMessage implements ShouldQueue
                 );
             }
         }
+
+        WhatsappProcessedMessage::query()->create([
+            'message_id' => $this->message->messageId,
+        ]);
     }
 
     public function failed(Throwable $exception): void
