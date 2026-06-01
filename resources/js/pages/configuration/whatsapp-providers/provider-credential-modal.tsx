@@ -13,6 +13,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import type { useProviderCredentialModal } from '@/pages/configuration/whatsapp-providers/hooks/use-provider-credential-modal';
+import { ProviderWebhookUrlField } from '@/pages/configuration/whatsapp-providers/provider-webhook-url-field';
 
 type ProviderCredentialModalProps = {
     modal: ReturnType<typeof useProviderCredentialModal>;
@@ -58,6 +59,14 @@ export function ProviderCredentialModal({ modal }: ProviderCredentialModalProps)
                             </p>
                         </AlertDescription>
                     </Alert>
+
+                    {provider?.webhookUrl !== null && provider?.webhookUrl !== undefined ? (
+                        <ProviderWebhookUrlField
+                            webhookUrl={provider.webhookUrl}
+                            providerSlug={provider.slug}
+                            providerLabel={provider.label}
+                        />
+                    ) : null}
 
                     {provider?.fields.map((field) =>
                         field.type === 'secret' ? (

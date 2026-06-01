@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Contracts\WhatsappDriver;
+use App\Models\Whatsapp\WhatsappProcessedMessage;
+use App\Whatsapp\WhatsappIncomingMessage;
+use App\Whatsapp\WhatsappMessageProcessor;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
+use Throwable;
+
+class ProcessIncomingWhatsappMessage implements ShouldQueue
+{
+    use Queueable;
+
+    public int $tries = 3;
+
+    public int $timeout = 120;
+
+    public function __construct(
+        public WhatsappIncomingMessage $message,
+    ) {
+        $this->onQueue('whatsapp');
+    }
+
+    public function handle(
+        WhatsappDriver $driver,
+        WhatsappMessageProcessor $processor,
+    ): void {
+        if (WhatsappProcessedMessage::query()->where('message_id', $this->message->messageId)->exists()) {
+            return;
+        }
+
+        WhatsappProcessedMessage::query()->create([
+            'message_id' => $this->message->messageId,
+        ]);
+
+        $result = $processor->process($this->message);
+
+        $driver->sendTextMessage($this->message->phone, $result->reply);
+
+        foreach ($result->attachments as $attachment) {
+            if (($attachment['type'] ?? '') === 'video') {
+                $driver->sendMediaMessage(
+                    to: $this->message->phone,
+                    mediaUrl: $attachment['url'],
+                    caption: $attachment['product_name'] ?? '',
+                );
+            }
+        }
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        Log::error('WhatsApp message processing failed', [
+            'phone' => $this->message->phone,
+            'messageId' => $this->message->messageId,
+            'error' => $exception->getMessage(),
+        ]);
+    }
+}

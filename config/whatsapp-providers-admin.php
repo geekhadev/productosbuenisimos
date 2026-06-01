@@ -15,6 +15,7 @@ return [
     'providers' => [
         'twilio' => [
             'label' => 'Twilio',
+            'webhook_route' => 'webhook.whatsapp.twilio',
             'fields' => [
                 'account_sid' => ['label' => 'Account SID', 'type' => 'text'],
                 'auth_token' => ['label' => 'Auth Token', 'type' => 'secret'],
@@ -27,6 +28,7 @@ return [
         ],
         'meta' => [
             'label' => 'Meta',
+            'webhook_route' => 'webhook.whatsapp.meta',
             'fields' => [
                 'access_token' => ['label' => 'Access Token', 'type' => 'secret'],
                 'phone_number_id' => ['label' => 'Phone Number ID', 'type' => 'text'],

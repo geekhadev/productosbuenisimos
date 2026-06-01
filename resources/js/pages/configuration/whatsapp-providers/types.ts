@@ -13,6 +13,7 @@ export type WhatsappProviderDefinition = {
     credentialsConfigured: boolean;
     credentialsUpdatedAt: string | null;
     configuredViaEnvironment: boolean;
+    webhookUrl: string | null;
     fields: WhatsappProviderFieldDefinition[];
 };
 

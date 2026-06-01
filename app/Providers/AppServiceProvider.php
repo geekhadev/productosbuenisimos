@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Contracts\WhatsappDriver;
 use App\Http\Responses\LoginResponse;
 use App\Http\Responses\RegisterResponse;
 use App\Models\Administration\Module;
@@ -39,6 +40,7 @@ use App\Policies\Stock\ProductPolicy;
 use App\Support\AiConfigurationBridge;
 use App\Support\FulfillmentConfigurationBridge;
 use App\Support\WhatsappConfigurationBridge;
+use App\Whatsapp\Drivers\TwilioWhatsappDriver;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Date;
@@ -59,6 +61,20 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
         $this->app->singleton(RegisterResponseContract::class, RegisterResponse::class);
+
+        $this->app->bind(WhatsappDriver::class, function (): WhatsappDriver {
+            $driver = config('whatsapp.driver');
+
+            return match ($driver) {
+                'twilio' => new TwilioWhatsappDriver(
+                    accountSid: (string) config('whatsapp.twilio.account_sid'),
+                    authToken: (string) config('whatsapp.twilio.auth_token'),
+                    fromNumber: (string) config('whatsapp.twilio.from_number'),
+                    shouldVerifyWebhook: (bool) config('whatsapp.verify_webhook', true),
+                ),
+                default => throw new \InvalidArgumentException("Driver WhatsApp desconocido: {$driver}"),
+            };
+        });
     }
 
     /**

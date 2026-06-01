@@ -14,6 +14,8 @@ return [
 
     'driver' => env('WHATSAPP_DRIVER', 'twilio'),
 
+    'verify_webhook' => env('WHATSAPP_VERIFY_WEBHOOK', true),
+
     /*
     |--------------------------------------------------------------------------
     | WhatsApp Providers

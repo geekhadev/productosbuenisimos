@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Configuration\WhatsappProviderCredential;
 use App\Models\Configuration\WhatsappSetting;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
 final class WhatsappConfigurationBridge
@@ -103,6 +104,7 @@ final class WhatsappConfigurationBridge
      *     credentialsConfigured: bool,
      *     credentialsUpdatedAt: ?string,
      *     configuredViaEnvironment: bool,
+     *     webhookUrl: ?string,
      *     fields: list<array{
      *         key: string,
      *         label: string,
@@ -155,6 +157,9 @@ final class WhatsappConfigurationBridge
                         ? $stored?->credentials_updated_at?->toIso8601String()
                         : null,
                     'configuredViaEnvironment' => $configuredViaEnvironment,
+                    'webhookUrl' => Route::has($definition['webhook_route'] ?? '')
+                        ? route($definition['webhook_route'])
+                        : null,
                     'fields' => $fields,
                 ];
             },
