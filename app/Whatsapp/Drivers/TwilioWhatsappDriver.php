@@ -6,6 +6,7 @@ use App\Contracts\WhatsappDriver;
 use App\Whatsapp\WhatsappIncomingMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Twilio\Rest\Client;
 use Twilio\Security\RequestValidator;
 
@@ -21,6 +22,10 @@ class TwilioWhatsappDriver implements WhatsappDriver
     public function verifyWebhook(Request $request): void
     {
         if (! $this->shouldVerifyWebhook) {
+            Log::info('Twilio WhatsApp webhook signature verification skipped', [
+                'verify_webhook' => false,
+            ]);
+
             return;
         }
 
@@ -29,13 +34,24 @@ class TwilioWhatsappDriver implements WhatsappDriver
         $params = $request->post();
         $signature = $request->header('X-Twilio-Signature', '');
 
-        if (! $validator->validate($signature, $url, $params)) {
-            Log::warning('Invalid Twilio WhatsApp webhook signature', [
-                'url' => $url,
+        if ($validator->validate($signature, $url, $params)) {
+            Log::info('Twilio WhatsApp webhook signature verified', [
+                'validation_url' => $url,
+                'message_sid' => $request->input('MessageSid'),
             ]);
 
-            abort(403, 'Invalid Twilio signature');
+            return;
         }
+
+        Log::warning('Invalid Twilio WhatsApp webhook signature', $this->webhookSignatureDiagnostics(
+            request: $request,
+            validator: $validator,
+            validationUrl: $url,
+            params: $params,
+            signature: $signature,
+        ));
+
+        abort(403, 'Invalid Twilio signature');
     }
 
     public function parseIncomingMessage(Request $request): ?WhatsappIncomingMessage
@@ -123,5 +139,59 @@ class TwilioWhatsappDriver implements WhatsappDriver
         }
 
         return "whatsapp:{$to}";
+    }
+
+    /**
+     * @param  array<string, mixed>  $params
+     * @return array<string, mixed>
+     */
+    private function webhookSignatureDiagnostics(
+        Request $request,
+        RequestValidator $validator,
+        string $validationUrl,
+        array $params,
+        string $signature,
+    ): array {
+        $appUrl = rtrim((string) config('app.url'), '/');
+        $httpValidationUrl = Str::startsWith($validationUrl, 'https://')
+            ? 'http://'.Str::after($validationUrl, 'https://')
+            : null;
+        $appValidationUrl = $appUrl !== ''
+            ? $appUrl.'/'.ltrim($request->path(), '/')
+            : null;
+
+        if ($appValidationUrl !== null && filled($request->getQueryString())) {
+            $appValidationUrl .= '?'.$request->getQueryString();
+        }
+
+        return [
+            'validation_url' => $validationUrl,
+            'request_scheme' => $request->getScheme(),
+            'request_host' => $request->getHost(),
+            'request_path' => $request->path(),
+            'request_url_without_query' => $request->url(),
+            'query_string' => $request->getQueryString(),
+            'forwarded_proto' => $request->header('X-Forwarded-Proto'),
+            'forwarded_host' => $request->header('X-Forwarded-Host'),
+            'forwarded_for' => $request->header('X-Forwarded-For'),
+            'cf_connecting_ip' => $request->header('CF-Connecting-IP'),
+            'cf_visitor' => $request->header('CF-Visitor'),
+            'signature_present' => $signature !== '',
+            'signature_length' => strlen($signature),
+            'post_param_keys' => array_keys($params),
+            'message_sid' => $request->input('MessageSid'),
+            'account_sid_suffix' => Str::substr($this->accountSid, -4),
+            'auth_token_configured' => $this->authToken !== '',
+            'auth_token_length' => strlen($this->authToken),
+            'auth_token_suffix' => Str::substr($this->authToken, -4),
+            'app_url' => config('app.url'),
+            'would_validate_with_http_url' => $httpValidationUrl !== null
+                && $validator->validate($signature, $httpValidationUrl, $params),
+            'http_validation_url' => $httpValidationUrl,
+            'would_validate_with_app_url' => $appValidationUrl !== null
+                && $appValidationUrl !== $validationUrl
+                && $validator->validate($signature, $appValidationUrl, $params),
+            'app_validation_url' => $appValidationUrl !== $validationUrl ? $appValidationUrl : null,
+        ];
     }
 }
