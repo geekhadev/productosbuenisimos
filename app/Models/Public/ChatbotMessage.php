@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'chatbot_conversation_id',
     'role',
     'source',
+    'media_type',
     'content',
     'attachments',
     'input_tokens',

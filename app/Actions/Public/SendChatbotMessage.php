@@ -35,6 +35,7 @@ class SendChatbotMessage
         ChatbotSource $source,
         string $message,
         ?array $productContext = null,
+        ?string $mediaType = null,
     ): array {
         if (! ChatbotAiConfiguration::isConfigured() && ! Ai::hasFakeGatewayFor(SalesAgent::class)) {
             throw ChatbotAgentUnavailableException::notConfigured();
@@ -66,12 +67,13 @@ class SendChatbotMessage
             alreadySentVideoProductNames: $alreadySentVideoProductNames,
         );
 
-        return DB::transaction(function () use ($conversation, $source, $message, $builtPrompt, $company, $productContext): array {
+        return DB::transaction(function () use ($conversation, $source, $message, $builtPrompt, $company, $productContext, $mediaType): array {
             ChatbotMessage::query()->create([
                 'chatbot_conversation_id' => $conversation->id,
                 'role' => ChatbotMessageRole::User,
                 'source' => $source,
                 'content' => $message,
+                'media_type' => $mediaType,
                 'created_at' => now(),
             ]);
 

@@ -4,7 +4,10 @@ namespace App\Whatsapp;
 
 use App\Actions\Public\IniciarChatbot;
 use App\Actions\Public\SendChatbotMessage;
+use App\Actions\Whatsapp\TranscribeWhatsappAudio;
+use App\Contracts\WhatsappDriver;
 use App\Enums\ChatbotSource;
+use App\Enums\WhatsappMessageType;
 
 class WhatsappMessageProcessor
 {
@@ -13,6 +16,8 @@ class WhatsappMessageProcessor
     public function __construct(
         private IniciarChatbot $iniciarChatbot,
         private SendChatbotMessage $sendChatbotMessage,
+        private WhatsappDriver $driver,
+        private TranscribeWhatsappAudio $transcribe,
     ) {}
 
     public function process(WhatsappIncomingMessage $message): WhatsappProcessingResult
@@ -21,6 +26,23 @@ class WhatsappMessageProcessor
             phone: $message->phone,
             source: ChatbotSource::Whatsapp,
         );
+
+        if ($message->type === WhatsappMessageType::Audio) {
+            $audioContent = $this->driver->downloadMedia($message->audioUrl ?? '');
+            $body = $this->transcribe->execute($audioContent, $message->audioMimeType ?? 'audio/ogg');
+
+            $response = $this->sendChatbotMessage->execute(
+                conversationId: $chatbot['conversation_id'],
+                source: ChatbotSource::Whatsapp,
+                message: $body,
+                mediaType: 'audio',
+            );
+
+            return new WhatsappProcessingResult(
+                reply: $response['reply'],
+                attachments: $response['attachments'],
+            );
+        }
 
         if (trim($message->body) === '') {
             return new WhatsappProcessingResult(

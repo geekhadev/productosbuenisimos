@@ -3,8 +3,10 @@
 namespace App\Whatsapp\Drivers;
 
 use App\Contracts\WhatsappDriver;
+use App\Enums\WhatsappMessageType;
 use App\Whatsapp\WhatsappIncomingMessage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Twilio\Rest\Client;
@@ -66,14 +68,38 @@ class TwilioWhatsappDriver implements WhatsappDriver
         $phone = str_replace('whatsapp:', '', $rawFrom);
         $rawTo = (string) $request->input('To', '');
         $toNumber = str_replace('whatsapp:', '', $rawTo);
+        $messageId = (string) $request->input('MessageSid');
+
+        $numMedia = (int) $request->input('NumMedia', 0);
+        $mediaContentType = (string) $request->input('MediaContentType0', '');
+
+        if ($numMedia > 0 && str_starts_with($mediaContentType, 'audio/')) {
+            return new WhatsappIncomingMessage(
+                phone: $phone,
+                body: '',
+                messageId: $messageId,
+                rawFrom: $rawFrom,
+                toNumber: $toNumber,
+                type: WhatsappMessageType::Audio,
+                audioUrl: (string) $request->input('MediaUrl0', ''),
+                audioMimeType: $mediaContentType,
+            );
+        }
 
         return new WhatsappIncomingMessage(
             phone: $phone,
             body: (string) $request->input('Body', ''),
-            messageId: (string) $request->input('MessageSid'),
+            messageId: $messageId,
             rawFrom: $rawFrom,
             toNumber: $toNumber,
         );
+    }
+
+    public function downloadMedia(string $url): string
+    {
+        return Http::withBasicAuth($this->accountSid, $this->authToken)
+            ->get($url)
+            ->body();
     }
 
     public function sendTextMessage(string $to, string $body): void

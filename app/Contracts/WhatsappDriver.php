@@ -28,4 +28,10 @@ interface WhatsappDriver
      * Envía un mensaje con media (video, imagen) al número de destino.
      */
     public function sendMediaMessage(string $to, string $mediaUrl, string $caption = ''): void;
+
+    /**
+     * Descarga el contenido binario de un archivo media del proveedor.
+     * Cada driver maneja la autenticación necesaria para acceder a la URL.
+     */
+    public function downloadMedia(string $url): string;
 }
