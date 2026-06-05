@@ -22,6 +22,7 @@ class UpdateProductAction
             'weight' => $attributes['weight'] ?? 0,
             'minimum_stock' => $attributes['minimum_stock'] ?? 0,
             'price' => $attributes['price'] ?? 0,
+            'description' => $attributes['description'] ?? null,
             'is_active' => $attributes['is_active'] ?? true,
         ]);
         $product->save();
