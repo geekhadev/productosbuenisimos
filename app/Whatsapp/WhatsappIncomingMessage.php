@@ -15,5 +15,7 @@ readonly class WhatsappIncomingMessage
         public WhatsappMessageType $type = WhatsappMessageType::Text,
         public ?string $audioUrl = null,
         public ?string $audioMimeType = null,
+        public ?float $latitude = null,
+        public ?float $longitude = null,
     ) {}
 }

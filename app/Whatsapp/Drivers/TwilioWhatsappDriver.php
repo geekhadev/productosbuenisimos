@@ -70,6 +70,19 @@ class TwilioWhatsappDriver implements WhatsappDriver
         $toNumber = str_replace('whatsapp:', '', $rawTo);
         $messageId = (string) $request->input('MessageSid');
 
+        if ($request->has('Latitude') && $request->has('Longitude')) {
+            return new WhatsappIncomingMessage(
+                phone: $phone,
+                body: '',
+                messageId: $messageId,
+                rawFrom: $rawFrom,
+                toNumber: $toNumber,
+                type: WhatsappMessageType::Location,
+                latitude: (float) $request->input('Latitude'),
+                longitude: (float) $request->input('Longitude'),
+            );
+        }
+
         $numMedia = (int) $request->input('NumMedia', 0);
         $mediaContentType = (string) $request->input('MediaContentType0', '');
 

@@ -27,6 +27,22 @@ class WhatsappMessageProcessor
             source: ChatbotSource::Whatsapp,
         );
 
+        if ($message->type === WhatsappMessageType::Location) {
+            $body = "El cliente compartió su ubicación.\nCoordenadas: {$message->latitude}, {$message->longitude}";
+
+            $response = $this->sendChatbotMessage->execute(
+                conversationId: $chatbot['conversation_id'],
+                source: ChatbotSource::Whatsapp,
+                message: $body,
+                mediaType: 'location',
+            );
+
+            return new WhatsappProcessingResult(
+                reply: $response['reply'],
+                attachments: $response['attachments'],
+            );
+        }
+
         if ($message->type === WhatsappMessageType::Audio) {
             $audioContent = $this->driver->downloadMedia($message->audioUrl ?? '');
             $body = $this->transcribe->execute($audioContent, $message->audioMimeType ?? 'audio/ogg');
