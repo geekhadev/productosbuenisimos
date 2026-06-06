@@ -7,6 +7,7 @@ use App\Enums\ChatbotMessageRole;
 use App\Enums\ChatbotSource;
 use App\Models\Public\ChatbotConversation;
 use App\Models\Public\ChatbotMessage;
+use App\Support\ChatbotPhone;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -42,12 +43,15 @@ class SendOperatorMessageAction
             return;
         }
 
+        $e164 = ChatbotPhone::toE164($conversation->phone);
+
         Log::info('[OperatorMessage] Calling WhatsappDriver::sendTextMessage', [
-            'to' => $conversation->phone,
+            'stored_phone' => $conversation->phone,
+            'e164_phone' => $e164,
         ]);
 
         try {
-            $this->driver->sendTextMessage($conversation->phone, $message);
+            $this->driver->sendTextMessage($e164, $message);
             Log::info('[OperatorMessage] sendTextMessage completed successfully');
         } catch (Throwable $e) {
             Log::error('[OperatorMessage] sendTextMessage threw an exception', [

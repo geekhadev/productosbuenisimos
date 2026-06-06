@@ -19,6 +19,15 @@ final class ChatbotPhone
         return $digits;
     }
 
+    /**
+     * Reconstruye el número E.164 completo a partir del número normalizado.
+     * Invierte la operación de normalize() para obtener el formato que espera Twilio.
+     */
+    public static function toE164(string $normalizedPhone): string
+    {
+        return '+56'.$normalizedPhone;
+    }
+
     public static function participantUserId(string $normalizedPhone): int
     {
         return (int) $normalizedPhone;
