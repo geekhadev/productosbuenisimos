@@ -33,28 +33,45 @@ class ResolveChatbotVideoAttachments
             $conversation,
         );
 
-        if ($products->isEmpty() || ! $this->shouldAttachVideos($response, $products, $productContext)) {
+        if ($products->isEmpty() || ! $this->shouldAttachMedia($response, $products, $productContext)) {
             return [];
         }
 
-        $alreadySentUrls = $this->alreadySentVideoUrls($conversation);
+        $alreadySentVideoUrls = $this->alreadySentVideoUrls($conversation);
+        $alreadySentImageUrls = $this->alreadySentImageUrls($conversation);
 
-        return $products
+        $videoAttachments = $products
             ->filter(fn (array $product): bool => filled($product['video']['url'] ?? null))
             ->unique('id')
-            ->reject(fn (array $product): bool => in_array($product['video']['url'], $alreadySentUrls, true))
+            ->reject(fn (array $product): bool => in_array($product['video']['url'], $alreadySentVideoUrls, true))
             ->map(fn (array $product): array => [
                 'type' => 'video',
                 'url' => $product['video']['url'],
                 'product_name' => $product['name'],
             ])
-            ->values()
+            ->values();
+
+        $productsWithVideoIds = $products
+            ->filter(fn (array $product): bool => filled($product['video']['url'] ?? null))
+            ->pluck('id')
             ->all();
+
+        $imageAttachments = $products
+            ->filter(fn (array $product): bool => ! in_array($product['id'] ?? null, $productsWithVideoIds, true)
+                && ! empty($product['images'] ?? []))
+            ->unique('id')
+            ->map(fn (array $product): ?array => $this->firstImageAttachment($product, $alreadySentImageUrls))
+            ->filter()
+            ->values();
+
+        return $videoAttachments->merge($imageAttachments)->all();
     }
 
     public function sanitizeAgentText(string $text): string
     {
+        $text = preg_replace('/!\[[^\]]*\]\([^)]*\)/u', '', $text) ?? $text;
         $text = preg_replace('/\[(?:Ver\s+)?[Vv]ideo[^\]]*\]\([^)]*\)/u', '', $text) ?? $text;
+        $text = preg_replace('/\[(?:Ver\s+)?[Ii]magen[^\]]*\]\([^)]*\)/u', '', $text) ?? $text;
         $text = preg_replace('/[ \t]+$/m', '', $text) ?? $text;
         $text = preg_replace('/\n{3,}/', "\n\n", $text) ?? $text;
 
@@ -65,7 +82,7 @@ class ResolveChatbotVideoAttachments
      * @param  array{id: string, name: string, code: string, sku: string, price: float|int|string}|null  $productContext
      * @param  Collection<int, array<string, mixed>>  $products
      */
-    private function shouldAttachVideos(
+    private function shouldAttachMedia(
         AgentResponse $response,
         Collection $products,
         ?array $productContext,
@@ -272,5 +289,51 @@ class ResolveChatbotVideoAttachments
             ->filter(fn (mixed $attachment): bool => is_array($attachment) && ($attachment['type'] ?? '') === 'video' && filled($attachment['url'] ?? null))
             ->pluck('url')
             ->all();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function alreadySentImageUrls(ChatbotConversation $conversation): array
+    {
+        return $conversation->messages()
+            ->where('role', ChatbotMessageRole::Assistant)
+            ->whereNotNull('attachments')
+            ->pluck('attachments')
+            ->flatten(1)
+            ->filter(fn (mixed $attachment): bool => is_array($attachment) && ($attachment['type'] ?? '') === 'image' && filled($attachment['url'] ?? null))
+            ->pluck('url')
+            ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $product
+     * @param  list<string>  $alreadySentImageUrls
+     * @return array{type: string, url: string, product_name: string}|null
+     */
+    private function firstImageAttachment(array $product, array $alreadySentImageUrls): ?array
+    {
+        foreach ($product['images'] ?? [] as $image) {
+            $url = $this->absoluteUrl((string) ($image['url'] ?? ''));
+
+            if (filled($url) && ! in_array($url, $alreadySentImageUrls, true)) {
+                return [
+                    'type' => 'image',
+                    'url' => $url,
+                    'product_name' => (string) ($product['name'] ?? ''),
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    private function absoluteUrl(string $url): string
+    {
+        if ($url === '' || str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+            return $url;
+        }
+
+        return url($url);
     }
 }

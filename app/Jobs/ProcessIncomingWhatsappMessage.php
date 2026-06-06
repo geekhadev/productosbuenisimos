@@ -39,7 +39,7 @@ class ProcessIncomingWhatsappMessage implements ShouldQueue
             $driver->sendTextMessage($this->message->phone, $result->reply);
 
             foreach ($result->attachments as $attachment) {
-                if (($attachment['type'] ?? '') === 'video') {
+                if (in_array($attachment['type'] ?? '', ['video', 'image'], true)) {
                     $driver->sendMediaMessage(
                         to: $this->message->phone,
                         mediaUrl: $attachment['url'],
