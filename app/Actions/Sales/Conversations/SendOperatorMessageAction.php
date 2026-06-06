@@ -7,6 +7,8 @@ use App\Enums\ChatbotMessageRole;
 use App\Enums\ChatbotSource;
 use App\Models\Public\ChatbotConversation;
 use App\Models\Public\ChatbotMessage;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class SendOperatorMessageAction
 {
@@ -14,6 +16,14 @@ class SendOperatorMessageAction
 
     public function execute(ChatbotConversation $conversation, string $message): void
     {
+        Log::info('[OperatorMessage] Saving message', [
+            'conversation_id' => $conversation->id,
+            'phone' => $conversation->phone,
+            'source' => $conversation->source->value,
+            'agent_paused' => $conversation->agent_paused,
+            'message_length' => strlen($message),
+        ]);
+
         ChatbotMessage::query()->create([
             'chatbot_conversation_id' => $conversation->id,
             'role' => ChatbotMessageRole::Assistant,
@@ -22,8 +32,29 @@ class SendOperatorMessageAction
             'created_at' => now(),
         ]);
 
-        if ($conversation->source === ChatbotSource::Whatsapp) {
+        Log::info('[OperatorMessage] Message saved to DB');
+
+        if ($conversation->source !== ChatbotSource::Whatsapp) {
+            Log::info('[OperatorMessage] Source is not WhatsApp, skipping send', [
+                'source' => $conversation->source->value,
+            ]);
+
+            return;
+        }
+
+        Log::info('[OperatorMessage] Calling WhatsappDriver::sendTextMessage', [
+            'to' => $conversation->phone,
+        ]);
+
+        try {
             $this->driver->sendTextMessage($conversation->phone, $message);
+            Log::info('[OperatorMessage] sendTextMessage completed successfully');
+        } catch (Throwable $e) {
+            Log::error('[OperatorMessage] sendTextMessage threw an exception', [
+                'error' => $e->getMessage(),
+                'class' => $e::class,
+            ]);
+            throw $e;
         }
     }
 }
