@@ -57,10 +57,6 @@ export function ProviderCredentialRow({
                             />
                         </span>
                     </p>
-                ) : provider.keyConfigured && provider.configuredViaEnvironment ? (
-                    <p className="text-muted-foreground text-sm">
-                        Configurado desde variables de entorno
-                    </p>
                 ) : (
                     <p className="text-muted-foreground text-sm">Sin credencial</p>
                 )}

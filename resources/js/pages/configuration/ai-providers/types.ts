@@ -4,7 +4,6 @@ export type AiProviderDefinition = {
     keyConfigured: boolean;
     keyUpdatedAt: string | null;
     keyLastChars: string | null;
-    configuredViaEnvironment: boolean;
 };
 
 export type ProviderCredentialFormData = {

@@ -6,7 +6,6 @@ export type FulfillmentProviderDefinition = {
     apiUrl: string | null;
     user: string | null;
     passLastChars: string | null;
-    configuredViaEnvironment: boolean;
 };
 
 export type ProviderCredentialFormData = {

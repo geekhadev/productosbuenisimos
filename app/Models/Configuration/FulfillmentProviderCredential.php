@@ -50,10 +50,7 @@ class FulfillmentProviderCredential extends Model
      */
     public static function manageableProviderSlugs(): array
     {
-        /** @var array<string, mixed> $providers */
-        $providers = config('fulfillment-providers-admin.providers', []);
-
-        return array_keys($providers);
+        return FulfillmentProvider::manageableSlugs();
     }
 
     public static function findForProvider(string $provider): ?static
@@ -65,9 +62,20 @@ class FulfillmentProviderCredential extends Model
     {
         /** @var array<string, mixed> $credentials */
         $credentials = $this->credentials ?? [];
+        $fieldDefinitions = FulfillmentProvider::fieldDefinitionsForProvider($this->provider);
 
-        return filled($credentials['api_url'] ?? null)
-            && filled($credentials['user'] ?? null)
-            && filled($credentials['pass'] ?? null);
+        if ($fieldDefinitions === []) {
+            return false;
+        }
+
+        foreach ($fieldDefinitions as $field => $definition) {
+            unset($definition);
+
+            if (! filled($credentials[$field] ?? null)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

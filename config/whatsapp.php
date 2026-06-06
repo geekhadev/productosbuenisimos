@@ -4,39 +4,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | WhatsApp Driver
+    | WhatsApp
     |--------------------------------------------------------------------------
     |
-    | Driver activo para envío y recepción de mensajes WhatsApp.
-    | Valores soportados: twilio, meta
+    | El driver activo y las credenciales por proveedor se resuelven desde la
+    | base de datos (configuration_whatsapp_*). Aquí solo quedan ajustes de
+    | infraestructura no administrables en el panel.
     |
     */
-
-    'driver' => env('WHATSAPP_DRIVER', 'twilio'),
 
     'verify_webhook' => env('WHATSAPP_VERIFY_WEBHOOK', true),
-
-    /*
-    |--------------------------------------------------------------------------
-    | WhatsApp Providers
-    |--------------------------------------------------------------------------
-    |
-    | Credenciales por proveedor. Los valores por defecto provienen del entorno;
-    | el panel de configuración puede sobrescribirlos en runtime.
-    |
-    */
-
-    'twilio' => [
-        'account_sid' => env('TWILIO_ACCOUNT_SID'),
-        'auth_token' => env('TWILIO_AUTH_TOKEN'),
-        'from_number' => env('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886'),
-    ],
-
-    'meta' => [
-        'access_token' => env('META_WHATSAPP_ACCESS_TOKEN'),
-        'phone_number_id' => env('META_WHATSAPP_PHONE_NUMBER_ID'),
-        'verify_token' => env('META_WHATSAPP_VERIFY_TOKEN'),
-        'app_secret' => env('META_WHATSAPP_APP_SECRET'),
-    ],
 
 ];

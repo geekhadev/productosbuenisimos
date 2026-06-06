@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Configuration\WhatsappProvider;
 use App\Models\Configuration\WhatsappProviderCredential;
 use App\Models\Configuration\WhatsappSetting;
 use Illuminate\Support\Facades\Route;
@@ -11,7 +12,7 @@ final class WhatsappConfigurationBridge
 {
     public static function providerHasAvailableCredentials(string $slug): bool
     {
-        if (! array_key_exists($slug, config('whatsapp-providers-admin.providers', []))) {
+        if (WhatsappProvider::findBySlug($slug) === null) {
             return false;
         }
 
@@ -25,7 +26,7 @@ final class WhatsappConfigurationBridge
     {
         return array_values(array_filter(
             WhatsappProviderCredential::manageableProviderSlugs(),
-            fn (string $slug): bool => self::providerIsRuntimeReady($slug),
+            fn (string $slug): bool => self::providerHasAvailableCredentials($slug),
         ));
     }
 
@@ -41,12 +42,6 @@ final class WhatsappConfigurationBridge
             return $stored;
         }
 
-        $configDefault = (string) config('whatsapp.driver', 'twilio');
-
-        if (in_array($configDefault, $selectable, true)) {
-            return $configDefault;
-        }
-
         return $selectable[0];
     }
 
@@ -55,13 +50,18 @@ final class WhatsappConfigurationBridge
      */
     public static function defaultProviderOptions(): array
     {
-        /** @var array<string, array{label: string}> $catalog */
-        $catalog = config('whatsapp-providers-admin.providers', []);
+        if (! Schema::hasTable('configuration_whatsapp_providers')) {
+            return [];
+        }
+
+        $labels = WhatsappProvider::query()
+            ->whereIn('slug', self::selectableDefaultProviderSlugs())
+            ->pluck('label', 'slug');
 
         return array_values(array_map(
             fn (string $slug): array => [
                 'value' => $slug,
-                'label' => $catalog[$slug]['label'],
+                'label' => (string) $labels->get($slug, $slug),
             ],
             self::selectableDefaultProviderSlugs(),
         ));
@@ -69,11 +69,18 @@ final class WhatsappConfigurationBridge
 
     public static function apply(): void
     {
-        if (! Schema::hasTable('configuration_whatsapp_provider_credentials')) {
+        if (
+            ! Schema::hasTable('configuration_whatsapp_providers')
+            || ! Schema::hasTable('configuration_whatsapp_provider_credentials')
+        ) {
             return;
         }
 
         foreach (WhatsappProviderCredential::query()->cursor() as $credential) {
+            if (WhatsappProvider::findBySlug($credential->provider) === null) {
+                continue;
+            }
+
             /** @var array<string, mixed> $values */
             $values = $credential->credentials ?? [];
 
@@ -103,7 +110,6 @@ final class WhatsappConfigurationBridge
      *     label: string,
      *     credentialsConfigured: bool,
      *     credentialsUpdatedAt: ?string,
-     *     configuredViaEnvironment: bool,
      *     webhookUrl: ?string,
      *     fields: list<array{
      *         key: string,
@@ -117,14 +123,17 @@ final class WhatsappConfigurationBridge
      */
     public static function providersForFrontend(): array
     {
-        /** @var array<string, array{label: string, fields: array<string, array{label: string, type: string, placeholder?: string}>}> $catalog */
-        $catalog = config('whatsapp-providers-admin.providers', []);
+        if (! Schema::hasTable('configuration_whatsapp_providers')) {
+            return [];
+        }
 
-        return array_map(
-            function (array $definition, string $slug): array {
-                $stored = WhatsappProviderCredential::findForProvider($slug);
+        return WhatsappProvider::query()
+            ->where('is_active', true)
+            ->orderBy('label')
+            ->get()
+            ->map(function (WhatsappProvider $provider): array {
+                $stored = WhatsappProviderCredential::findForProvider($provider->slug);
                 $hasStoredCredentials = $stored?->hasStoredCredentials() ?? false;
-                $configuredViaEnvironment = self::providerConfiguredViaEnvironment($slug) && ! $hasStoredCredentials;
                 /** @var array<string, mixed> $storedCredentials */
                 $storedCredentials = $stored?->credentials ?? [];
                 /** @var array<string, string> $secretHints */
@@ -132,7 +141,7 @@ final class WhatsappConfigurationBridge
 
                 $fields = [];
 
-                foreach ($definition['fields'] as $fieldKey => $fieldDefinition) {
+                foreach ($provider->fields as $fieldKey => $fieldDefinition) {
                     $isSecret = $fieldDefinition['type'] === 'secret';
 
                     $fields[] = [
@@ -150,39 +159,18 @@ final class WhatsappConfigurationBridge
                 }
 
                 return [
-                    'slug' => $slug,
-                    'label' => $definition['label'],
-                    'credentialsConfigured' => self::providerHasAvailableCredentials($slug),
+                    'slug' => $provider->slug,
+                    'label' => $provider->label,
+                    'credentialsConfigured' => self::providerHasAvailableCredentials($provider->slug),
                     'credentialsUpdatedAt' => $hasStoredCredentials
                         ? $stored?->credentials_updated_at?->toIso8601String()
                         : null,
-                    'configuredViaEnvironment' => $configuredViaEnvironment,
-                    'webhookUrl' => Route::has($definition['webhook_route'] ?? '')
-                        ? route($definition['webhook_route'])
+                    'webhookUrl' => filled($provider->webhook_route) && Route::has($provider->webhook_route)
+                        ? route($provider->webhook_route)
                         : null,
                     'fields' => $fields,
                 ];
-            },
-            $catalog,
-            array_keys($catalog),
-        );
-    }
-
-    private static function providerIsRuntimeReady(string $slug): bool
-    {
-        foreach (WhatsappProviderCredential::fieldDefinitionsForProvider($slug) as $field => $definition) {
-            unset($definition);
-
-            if (! filled(config("whatsapp.{$slug}.{$field}"))) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static function providerConfiguredViaEnvironment(string $slug): bool
-    {
-        return self::providerIsRuntimeReady($slug);
+            })
+            ->all();
     }
 }

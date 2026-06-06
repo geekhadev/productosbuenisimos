@@ -2,22 +2,15 @@
 
 namespace App\Support;
 
+use App\Models\Configuration\FulfillmentProvider;
 use App\Models\Configuration\FulfillmentProviderCredential;
 use Illuminate\Support\Facades\Schema;
 
 final class FulfillmentConfigurationBridge
 {
-    /**
-     * @return list<string>
-     */
-    private static function requiredCredentialFields(): array
-    {
-        return ['api_url', 'user', 'pass'];
-    }
-
     public static function providerHasAvailableCredentials(string $slug): bool
     {
-        if (! array_key_exists($slug, config('fulfillment.providers', []))) {
+        if (FulfillmentProvider::findBySlug($slug) === null) {
             return false;
         }
 
@@ -26,11 +19,18 @@ final class FulfillmentConfigurationBridge
 
     public static function apply(): void
     {
-        if (! Schema::hasTable('configuration_fulfillment_provider_credentials')) {
+        if (
+            ! Schema::hasTable('configuration_fulfillment_providers')
+            || ! Schema::hasTable('configuration_fulfillment_provider_credentials')
+        ) {
             return;
         }
 
         foreach (FulfillmentProviderCredential::query()->cursor() as $credential) {
+            if (FulfillmentProvider::findBySlug($credential->provider) === null) {
+                continue;
+            }
+
             /** @var array<string, mixed> $values */
             $values = $credential->credentials ?? [];
 
@@ -53,26 +53,28 @@ final class FulfillmentConfigurationBridge
      *     apiUrl: ?string,
      *     user: ?string,
      *     passLastChars: ?string,
-     *     configuredViaEnvironment: bool,
      * }>
      */
     public static function providersForFrontend(): array
     {
-        /** @var array<string, array{label: string, fields: array<string, array{label: string, type: string}>}> $catalog */
-        $catalog = config('fulfillment-providers-admin.providers', []);
+        if (! Schema::hasTable('configuration_fulfillment_providers')) {
+            return [];
+        }
 
-        return array_map(
-            function (array $definition, string $slug): array {
-                $stored = FulfillmentProviderCredential::findForProvider($slug);
+        return FulfillmentProvider::query()
+            ->where('is_active', true)
+            ->orderBy('label')
+            ->get()
+            ->map(function (FulfillmentProvider $provider): array {
+                $stored = FulfillmentProviderCredential::findForProvider($provider->slug);
                 $hasStoredCredentials = $stored?->hasStoredCredentials() ?? false;
-                $configuredViaEnvironment = self::providerConfiguredViaEnvironment($slug) && ! $hasStoredCredentials;
                 /** @var array<string, mixed> $storedCredentials */
                 $storedCredentials = $stored?->credentials ?? [];
 
                 return [
-                    'slug' => $slug,
-                    'label' => $definition['label'],
-                    'credentialsConfigured' => self::providerHasAvailableCredentials($slug),
+                    'slug' => $provider->slug,
+                    'label' => $provider->label,
+                    'credentialsConfigured' => self::providerHasAvailableCredentials($provider->slug),
                     'credentialsUpdatedAt' => $hasStoredCredentials
                         ? $stored?->credentials_updated_at?->toIso8601String()
                         : null,
@@ -85,22 +87,8 @@ final class FulfillmentConfigurationBridge
                     'passLastChars' => $hasStoredCredentials
                         ? $stored?->pass_last_chars
                         : null,
-                    'configuredViaEnvironment' => $configuredViaEnvironment,
                 ];
-            },
-            $catalog,
-            array_keys($catalog),
-        );
-    }
-
-    private static function providerConfiguredViaEnvironment(string $slug): bool
-    {
-        foreach (self::requiredCredentialFields() as $field) {
-            if (! filled(config("fulfillment.providers.{$slug}.{$field}"))) {
-                return false;
-            }
-        }
-
-        return true;
+            })
+            ->all();
     }
 }

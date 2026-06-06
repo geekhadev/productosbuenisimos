@@ -51,10 +51,7 @@ class WhatsappProviderCredential extends Model
      */
     public static function manageableProviderSlugs(): array
     {
-        /** @var array<string, mixed> $providers */
-        $providers = config('whatsapp-providers-admin.providers', []);
-
-        return array_keys($providers);
+        return WhatsappProvider::manageableSlugs();
     }
 
     /**
@@ -62,10 +59,7 @@ class WhatsappProviderCredential extends Model
      */
     public static function fieldDefinitionsForProvider(string $provider): array
     {
-        /** @var array<string, array{label: string, type: string, placeholder?: string}> $fields */
-        $fields = config("whatsapp-providers-admin.providers.{$provider}.fields", []);
-
-        return $fields;
+        return WhatsappProvider::fieldDefinitionsForProvider($provider);
     }
 
     public static function findForProvider(string $provider): ?static

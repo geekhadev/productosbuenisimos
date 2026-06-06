@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Configuration\AiProvider;
 use App\Models\Configuration\AiProviderCredential;
 use App\Models\Configuration\AiSetting;
 use Illuminate\Support\Facades\Schema;
@@ -10,7 +11,7 @@ final class AiConfigurationBridge
 {
     public static function providerHasAvailableKey(string $slug): bool
     {
-        if (! array_key_exists($slug, config('ai.providers', []))) {
+        if (AiProvider::findBySlug($slug) === null) {
             return false;
         }
 
@@ -49,7 +50,7 @@ final class AiConfigurationBridge
     {
         return array_values(array_filter(
             AiProviderCredential::manageableProviderSlugs(),
-            fn (string $slug): bool => filled(config("ai.providers.{$slug}.key")),
+            fn (string $slug): bool => self::providerHasAvailableKey($slug),
         ));
     }
 
@@ -79,13 +80,18 @@ final class AiConfigurationBridge
      */
     public static function defaultProviderOptions(): array
     {
-        /** @var array<string, array{label: string}> $catalog */
-        $catalog = config('ai-providers-admin.providers', []);
+        if (! Schema::hasTable('configuration_ai_providers')) {
+            return [];
+        }
+
+        $labels = AiProvider::query()
+            ->whereIn('slug', self::selectableDefaultProviderSlugs())
+            ->pluck('label', 'slug');
 
         return array_values(array_map(
             fn (string $slug): array => [
                 'value' => $slug,
-                'label' => $catalog[$slug]['label'],
+                'label' => (string) $labels->get($slug, $slug),
             ],
             self::selectableDefaultProviderSlugs(),
         ));
@@ -93,11 +99,18 @@ final class AiConfigurationBridge
 
     public static function apply(): void
     {
-        if (! Schema::hasTable('configuration_ai_provider_credentials')) {
+        if (
+            ! Schema::hasTable('configuration_ai_providers')
+            || ! Schema::hasTable('configuration_ai_provider_credentials')
+        ) {
             return;
         }
 
         foreach (AiProviderCredential::query()->cursor() as $credential) {
+            if (AiProvider::findBySlug($credential->provider) === null) {
+                continue;
+            }
+
             /** @var array<string, mixed> $values */
             $values = $credential->credentials ?? [];
 
@@ -128,35 +141,34 @@ final class AiConfigurationBridge
      *     keyConfigured: bool,
      *     keyUpdatedAt: ?string,
      *     keyLastChars: ?string,
-     *     configuredViaEnvironment: bool,
      * }>
      */
     public static function providersForFrontend(): array
     {
-        /** @var array<string, array{label: string, fields: array<string, array{label: string, type: string}>}> $catalog */
-        $catalog = config('ai-providers-admin.providers', []);
+        if (! Schema::hasTable('configuration_ai_providers')) {
+            return [];
+        }
 
-        return array_map(
-            function (array $definition, string $slug): array {
-                $stored = AiProviderCredential::findForProvider($slug);
+        return AiProvider::query()
+            ->where('is_active', true)
+            ->orderBy('label')
+            ->get()
+            ->map(function (AiProvider $provider): array {
+                $stored = AiProviderCredential::findForProvider($provider->slug);
                 $hasStoredKey = $stored?->hasStoredKey() ?? false;
-                $envKeyConfigured = filled(config("ai.providers.{$slug}.key"));
 
                 return [
-                    'slug' => $slug,
-                    'label' => $definition['label'],
-                    'keyConfigured' => self::providerHasAvailableKey($slug),
+                    'slug' => $provider->slug,
+                    'label' => $provider->label,
+                    'keyConfigured' => self::providerHasAvailableKey($provider->slug),
                     'keyUpdatedAt' => $hasStoredKey
                         ? $stored?->key_updated_at?->toIso8601String()
                         : null,
                     'keyLastChars' => $hasStoredKey
                         ? $stored?->key_last_chars
                         : null,
-                    'configuredViaEnvironment' => $envKeyConfigured && ! $hasStoredKey,
                 ];
-            },
-            $catalog,
-            array_keys($catalog),
-        );
+            })
+            ->all();
     }
 }

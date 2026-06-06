@@ -50,10 +50,7 @@ class AiProviderCredential extends Model
      */
     public static function manageableProviderSlugs(): array
     {
-        /** @var array<string, mixed> $providers */
-        $providers = config('ai-providers-admin.providers', []);
-
-        return array_keys($providers);
+        return AiProvider::manageableSlugs();
     }
 
     public static function findForProvider(string $provider): ?static
@@ -65,7 +62,20 @@ class AiProviderCredential extends Model
     {
         /** @var array<string, mixed> $credentials */
         $credentials = $this->credentials ?? [];
+        $fieldDefinitions = AiProvider::fieldDefinitionsForProvider($this->provider);
 
-        return filled($credentials['key'] ?? null);
+        if ($fieldDefinitions === []) {
+            return false;
+        }
+
+        foreach ($fieldDefinitions as $field => $definition) {
+            unset($definition);
+
+            if (! filled($credentials[$field] ?? null)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
