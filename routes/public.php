@@ -3,7 +3,12 @@
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LandingPublicProductController;
 use App\Http\Controllers\Public\ChatbotController;
+use App\Http\Controllers\Public\WhatsappMediaController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/whatsapp-media/{mediaId}', [WhatsappMediaController::class, 'show'])
+    ->whereUuid('mediaId')
+    ->name('whatsapp-media.show');
 
 Route::get('/', LandingController::class)->name('home');
 
