@@ -340,9 +340,19 @@ class ResolveChatbotVideoAttachments
     private function firstImageAttachment(array $product, array $alreadySentImageUrls): ?array
     {
         foreach ($product['images'] ?? [] as $image) {
-            $url = $this->absoluteUrl((string) ($image['url'] ?? ''));
+            $rawUrl = (string) ($image['url'] ?? '');
+            $url = $this->absoluteUrl($rawUrl);
+            $alreadySent = in_array($url, $alreadySentImageUrls, true);
 
-            if (filled($url) && ! in_array($url, $alreadySentImageUrls, true)) {
+            Log::info('ResolveChatbotVideoAttachments: firstImageAttachment candidato', [
+                'product_name' => $product['name'] ?? null,
+                'raw_url' => $rawUrl,
+                'absolute_url' => $url,
+                'already_sent' => $alreadySent,
+                'already_sent_urls' => $alreadySentImageUrls,
+            ]);
+
+            if (filled($url) && ! $alreadySent) {
                 return [
                     'type' => 'image',
                     'url' => $url,
