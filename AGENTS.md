@@ -19,6 +19,8 @@ Lo siguiente (Laravel Boost embebido, activación de skills, etc.) complementa l
 - **No** uses `npm run lint` para eso: ese script corre ESLint sobre **todo** el árbol (`.`) y solo conviene cuando el usuario o la tarea pidan un lint global.
 - Si la tarea no tocó ningún archivo de frontend/ESLint, no hace falta ejecutar este comando.
 
+*** NO CREAR TESTS EN ESTE MVP ***
+
 <laravel-boost-guidelines>
 === foundation rules ===
 
