@@ -129,13 +129,37 @@ class TwilioWhatsappDriver implements WhatsappDriver
 
     public function sendMediaMessage(string $to, string $mediaUrl, string $caption = ''): void
     {
-        $client = new Client($this->accountSid, $this->authToken);
-
-        $client->messages->create($this->formatWhatsappAddress($to), [
-            'from' => $this->fromNumber,
-            'body' => $caption,
-            'mediaUrl' => [$mediaUrl],
+        Log::info('Twilio sendMediaMessage: iniciando', [
+            'to_suffix' => substr($to, -6),
+            'media_url' => $mediaUrl,
+            'caption' => $caption,
         ]);
+
+        try {
+            $client = new Client($this->accountSid, $this->authToken);
+
+            $message = $client->messages->create($this->formatWhatsappAddress($to), [
+                'from' => $this->fromNumber,
+                'body' => $caption,
+                'mediaUrl' => [$mediaUrl],
+            ]);
+
+            Log::info('Twilio sendMediaMessage: enviado', [
+                'to_suffix' => substr($to, -6),
+                'media_url' => $mediaUrl,
+                'message_sid' => $message->sid,
+                'status' => $message->status,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Twilio sendMediaMessage: error', [
+                'to_suffix' => substr($to, -6),
+                'media_url' => $mediaUrl,
+                'error' => $e->getMessage(),
+                'error_class' => $e::class,
+            ]);
+
+            throw $e;
+        }
     }
 
     /**

@@ -4,6 +4,7 @@ use App\Http\Controllers\Sales\AgentConfigController;
 use App\Http\Controllers\Sales\ConversationsController;
 use App\Http\Controllers\Sales\CustomersController;
 use App\Http\Controllers\Sales\LeadsController;
+use App\Http\Controllers\Sales\OrderFulfillmentController;
 use App\Http\Controllers\Sales\OrdersController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,9 @@ Route::post('conversations/{conversation}/operator-message', [ConversationsContr
 Route::resource('customers', CustomersController::class)->except(['show']);
 
 Route::resource('leads', LeadsController::class)->except(['show']);
+
+Route::post('orders/fulfillment/send-to-contraentrega', [OrderFulfillmentController::class, 'sendToContraEntrega'])
+    ->name('orders.fulfillment.send-to-contraentrega');
 
 Route::resource('orders', OrdersController::class)
     ->except(['show', 'create']);

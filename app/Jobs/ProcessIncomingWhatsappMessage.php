@@ -35,6 +35,18 @@ class ProcessIncomingWhatsappMessage implements ShouldQueue
 
         $result = $processor->process($this->message);
 
+        Log::info('WhatsApp chatbot response', [
+            'phone' => $this->message->phone,
+            'message_id' => $this->message->messageId,
+            'has_reply' => $result->reply !== '',
+            'attachments_count' => count($result->attachments),
+            'attachments' => array_map(fn ($a) => [
+                'type' => $a['type'] ?? null,
+                'url' => $a['url'] ?? null,
+                'product_name' => $a['product_name'] ?? null,
+            ], $result->attachments),
+        ]);
+
         if ($result->reply !== '') {
             $driver->sendTextMessage($this->message->phone, $result->reply);
 

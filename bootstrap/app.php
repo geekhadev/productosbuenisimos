@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function (): void {
             Route::middleware('api')
                 ->group(base_path('routes/webhooks.php'));
+
+            if (! app()->isProduction()) {
+                Route::middleware('web')
+                    ->group(base_path('routes/test.php'));
+            }
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {

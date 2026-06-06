@@ -8,6 +8,7 @@ use App\Models\Public\ChatbotConversation;
 use App\Models\Stock\Product;
 use App\Support\Stock\ProductMediaPayload;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Ai\Responses\AgentResponse;
 use Laravel\Ai\Responses\Data\ToolResult;
@@ -33,7 +34,20 @@ class ResolveChatbotVideoAttachments
             $conversation,
         );
 
-        if ($products->isEmpty() || ! $this->shouldAttachMedia($response, $products, $productContext)) {
+        $shouldAttach = $this->shouldAttachMedia($response, $products, $productContext);
+
+        Log::info('ResolveChatbotVideoAttachments: evaluación', [
+            'conversation_id' => $conversation->id,
+            'products_found' => $products->count(),
+            'product_names' => $products->pluck('name')->all(),
+            'products_with_images' => $products->filter(fn ($p) => ! empty($p['images'] ?? []))->count(),
+            'products_with_video' => $products->filter(fn ($p) => filled($p['video']['url'] ?? null))->count(),
+            'should_attach_media' => $shouldAttach,
+            'get_products_invoked' => $this->getProductsWasInvoked($response),
+            'has_product_context' => $productContext !== null,
+        ]);
+
+        if ($products->isEmpty() || ! $shouldAttach) {
             return [];
         }
 
@@ -46,7 +60,7 @@ class ResolveChatbotVideoAttachments
             ->reject(fn (array $product): bool => in_array($product['video']['url'], $alreadySentVideoUrls, true))
             ->map(fn (array $product): array => [
                 'type' => 'video',
-                'url' => $product['video']['url'],
+                'url' => $this->absoluteUrl((string) $product['video']['url']),
                 'product_name' => $product['name'],
             ])
             ->values();
@@ -64,7 +78,19 @@ class ResolveChatbotVideoAttachments
             ->filter()
             ->values();
 
-        return $videoAttachments->merge($imageAttachments)->all();
+        $resolved = $videoAttachments->merge($imageAttachments)->all();
+
+        Log::info('ResolveChatbotVideoAttachments: attachments resueltos', [
+            'conversation_id' => $conversation->id,
+            'total' => count($resolved),
+            'attachments' => array_map(fn ($a) => [
+                'type' => $a['type'],
+                'url' => $a['url'],
+                'product_name' => $a['product_name'],
+            ], $resolved),
+        ]);
+
+        return $resolved;
     }
 
     public function sanitizeAgentText(string $text): string

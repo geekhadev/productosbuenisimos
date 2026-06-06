@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, ExternalLink, Send } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/custom/whatsapp-icon';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -132,9 +133,22 @@ export function ConversationDetailPanel({
                         <h2 className="truncate text-base font-semibold">
                             {detail.contact_name}
                         </h2>
-                        <p className="truncate text-xs text-muted-foreground">
-                            {detail.phone}
-                        </p>
+                        <div className="flex items-center gap-1.5">
+                            <p className="truncate text-xs text-muted-foreground">
+                                {detail.phone}
+                            </p>
+                            {detail.phone ? (
+                                <a
+                                    href={`https://wa.me/${detail.phone.replace(/\D/g, '')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Abrir WhatsApp"
+                                    className="shrink-0 text-[#25D366]"
+                                >
+                                    <WhatsAppIcon className="size-3.5" />
+                                </a>
+                            ) : null}
+                        </div>
                         <div className="mt-2 flex flex-wrap items-center gap-1.5">
                             <Badge
                                 variant={contactTypeBadgeVariant(

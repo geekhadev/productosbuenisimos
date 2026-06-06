@@ -1,5 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/custom/whatsapp-icon';
 import { useMemo } from 'react';
 import { FormLinkButton } from '@/components/custom/form-link-button';
 import {
@@ -51,6 +52,19 @@ function CustomersIndex() {
                 headerClassName: 'w-0 text-right',
                 render: (row) => (
                     <div className="flex justify-end gap-1">
+                        {row.phone ? (
+                            <Button variant="outline" size="icon" type="button" asChild>
+                                <a
+                                    href={`https://wa.me/${row.phone.replace(/\D/g, '')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={`Abrir WhatsApp de ${row.full_name}`}
+                                    className="text-[#25D366]"
+                                >
+                                    <WhatsAppIcon className="size-3" />
+                                </a>
+                            </Button>
+                        ) : null}
                         {row.can.update ? (
                             <Button variant="outline" size="icon" type="button" asChild>
                                 <Link
