@@ -14,6 +14,10 @@ Route::get('conversations', [ConversationsController::class, 'index'])
     ->name('conversations.index');
 Route::get('conversations/{conversation}', [ConversationsController::class, 'show'])
     ->name('conversations.show');
+Route::patch('conversations/{conversation}/toggle-agent', [ConversationsController::class, 'toggleAgent'])
+    ->name('conversations.toggle-agent');
+Route::post('conversations/{conversation}/operator-message', [ConversationsController::class, 'operatorMessage'])
+    ->name('conversations.operator-message');
 
 Route::resource('customers', CustomersController::class)->except(['show']);
 

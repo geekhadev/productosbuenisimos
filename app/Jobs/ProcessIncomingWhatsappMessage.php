@@ -35,15 +35,17 @@ class ProcessIncomingWhatsappMessage implements ShouldQueue
 
         $result = $processor->process($this->message);
 
-        $driver->sendTextMessage($this->message->phone, $result->reply);
+        if ($result->reply !== '') {
+            $driver->sendTextMessage($this->message->phone, $result->reply);
 
-        foreach ($result->attachments as $attachment) {
-            if (($attachment['type'] ?? '') === 'video') {
-                $driver->sendMediaMessage(
-                    to: $this->message->phone,
-                    mediaUrl: $attachment['url'],
-                    caption: $attachment['product_name'] ?? '',
-                );
+            foreach ($result->attachments as $attachment) {
+                if (($attachment['type'] ?? '') === 'video') {
+                    $driver->sendMediaMessage(
+                        to: $this->message->phone,
+                        mediaUrl: $attachment['url'],
+                        caption: $attachment['product_name'] ?? '',
+                    );
+                }
             }
         }
 

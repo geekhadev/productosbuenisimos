@@ -49,6 +49,19 @@ class SendChatbotMessage
             ->where('is_active', true)
             ->firstOrFail();
 
+        if ($conversation->agent_paused) {
+            ChatbotMessage::query()->create([
+                'chatbot_conversation_id' => $conversation->id,
+                'role' => ChatbotMessageRole::User,
+                'source' => $source,
+                'content' => $message,
+                'media_type' => $mediaType,
+                'created_at' => now(),
+            ]);
+
+            return ['reply' => '', 'attachments' => []];
+        }
+
         $alreadySentVideoProductNames = $conversation->messages()
             ->where('role', ChatbotMessageRole::Assistant)
             ->whereNotNull('attachments')

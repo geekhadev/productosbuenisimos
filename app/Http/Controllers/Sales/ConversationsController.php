@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Sales;
 use App\Actions\Sales\Conversations\GetConversationDetailAction;
 use App\Actions\Sales\Conversations\ListConversationsAction;
 use App\Actions\Sales\Conversations\MapConversationListItemAction;
+use App\Actions\Sales\Conversations\SendOperatorMessageAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\ConversationListRequest;
 use App\Models\Public\ChatbotConversation;
 use App\Support\SelectedCompanySession;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -68,5 +71,30 @@ class ConversationsController extends Controller
             ),
             'selected' => $detailAction->execute($conversation),
         ]);
+    }
+
+    public function toggleAgent(ChatbotConversation $conversation): RedirectResponse
+    {
+        $this->authorize('view', $conversation);
+
+        $conversation->update(['agent_paused' => ! $conversation->agent_paused]);
+
+        return back();
+    }
+
+    public function operatorMessage(
+        Request $request,
+        ChatbotConversation $conversation,
+        SendOperatorMessageAction $action,
+    ): RedirectResponse {
+        $this->authorize('view', $conversation);
+
+        $validated = $request->validate([
+            'message' => 'required|string|max:4000',
+        ]);
+
+        $action->execute($conversation, $validated['message']);
+
+        return back();
     }
 }

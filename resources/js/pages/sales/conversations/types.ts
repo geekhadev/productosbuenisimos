@@ -32,6 +32,7 @@ export type ConversationMessage = {
 export type ConversationDetail = {
     id: string;
     phone: string;
+    agent_paused: boolean;
     contact_name: string;
     contact_type: 'customer' | 'lead' | 'unknown';
     lead_status: string | null;

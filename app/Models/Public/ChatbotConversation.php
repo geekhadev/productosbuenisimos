@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
     'agent_conversation_id',
     'source',
     'is_active',
+    'agent_paused',
 ])]
 class ChatbotConversation extends Model
 {
@@ -85,6 +86,7 @@ class ChatbotConversation extends Model
         return [
             'source' => ChatbotSource::class,
             'is_active' => 'boolean',
+            'agent_paused' => 'boolean',
         ];
     }
 }

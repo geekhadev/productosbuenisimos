@@ -1,8 +1,10 @@
+import { router } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { ArrowLeft, ExternalLink, Send } from 'lucide-react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import {
     CONTACT_TYPE_LABELS,
     LEAD_STATUS_LABELS,
@@ -47,7 +49,10 @@ export function ConversationDetailPanel({
     showBackButton = false,
 }: ConversationDetailPanelProps) {
     const messagesRef = useRef<HTMLDivElement>(null);
+    const [operatorMessage, setOperatorMessage] = useState('');
+    const [isSending, setIsSending] = useState(false);
 
+    // Auto-scroll al último mensaje
     useEffect(() => {
         const container = messagesRef.current;
 
@@ -58,6 +63,17 @@ export function ConversationDetailPanel({
         container.scrollTop = container.scrollHeight;
     }, [detail]);
 
+    // Polling cada 10 segundos
+    useEffect(() => {
+        if (detail == null) return;
+
+        const interval = setInterval(() => {
+            router.reload({ only: ['selected'], preserveScroll: true });
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, [detail?.id]);
+
     if (detail == null) {
         return (
             <div className="flex h-full min-h-0 flex-1 items-center justify-center p-6">
@@ -65,6 +81,32 @@ export function ConversationDetailPanel({
                     Selecciona una conversación para ver el historial de mensajes.
                 </p>
             </div>
+        );
+    }
+
+    function handleToggleAgent() {
+        router.patch(
+            `/sales/conversations/${detail!.id}/toggle-agent`,
+            {},
+            { preserveScroll: true },
+        );
+    }
+
+    function handleSendOperatorMessage(e: FormEvent) {
+        e.preventDefault();
+
+        if (!operatorMessage.trim() || isSending) return;
+
+        setIsSending(true);
+
+        router.post(
+            `/sales/conversations/${detail!.id}/operator-message`,
+            { message: operatorMessage },
+            {
+                preserveScroll: true,
+                onSuccess: () => setOperatorMessage(''),
+                onFinish: () => setIsSending(false),
+            },
         );
     }
 
@@ -126,6 +168,20 @@ export function ConversationDetailPanel({
                             ) : null}
                         </div>
                     </div>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                        <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                            Agente
+                            <Switch
+                                checked={!detail.agent_paused}
+                                onCheckedChange={handleToggleAgent}
+                            />
+                        </label>
+                        {detail.agent_paused ? (
+                            <span className="text-xs font-medium text-amber-600">
+                                Modo operador
+                            </span>
+                        ) : null}
+                    </div>
                 </div>
             </header>
 
@@ -147,6 +203,41 @@ export function ConversationDetailPanel({
                     ))
                 )}
             </div>
+
+            {detail.agent_paused ? (
+                <form
+                    onSubmit={handleSendOperatorMessage}
+                    className="shrink-0 border-t border-border/60 px-4 py-3"
+                >
+                    <div className="flex gap-2">
+                        <textarea
+                            value={operatorMessage}
+                            onChange={(e) => setOperatorMessage(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSendOperatorMessage(e as unknown as FormEvent);
+                                }
+                            }}
+                            placeholder="Escribe un mensaje como operador..."
+                            rows={2}
+                            className="min-h-0 flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            disabled={isSending}
+                        />
+                        <Button
+                            type="submit"
+                            size="icon"
+                            disabled={!operatorMessage.trim() || isSending}
+                            className="self-end"
+                        >
+                            <Send className="size-4" />
+                        </Button>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Enter para enviar · Shift+Enter para nueva línea
+                    </p>
+                </form>
+            ) : null}
         </div>
     );
 }

@@ -24,6 +24,7 @@ class GetConversationDetailAction
         return [
             'id' => $conversation->id,
             'phone' => $conversation->phone,
+            'agent_paused' => $conversation->agent_paused,
             'contact_name' => $this->contactName($conversation, $lead),
             'contact_type' => $this->contactType($lead),
             'lead_status' => $lead?->status?->value,
