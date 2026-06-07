@@ -48,6 +48,7 @@ class CreateOrderAction
             ],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.unit_price' => ['nullable', 'numeric', 'min:0'],
+            'delivery_date' => ['required', 'date_format:Y-m-d'],
         ]);
 
         if ($validator->fails()) {
@@ -61,6 +62,7 @@ class CreateOrderAction
             'name' => $name,
             'customer_id' => $validated['customer_id'],
             'address_id' => $validated['address_id'],
+            'delivery_date' => $validated['delivery_date'],
             'items' => $this->orderItems($validated['items']),
         ]);
 

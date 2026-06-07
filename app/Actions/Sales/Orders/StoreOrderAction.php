@@ -12,7 +12,7 @@ class StoreOrderAction
     ) {}
 
     /**
-     * @param  array{name: string, customer_id: string, address_id: string, items: list<array{product_id: string, quantity: int, unit_price?: string|float|null}>}  $attributes
+     * @param  array{name: string, customer_id: string, address_id: string, delivery_date: string, items: list<array{product_id: string, quantity: int, unit_price?: string|float|null}>}  $attributes
      */
     public function execute(string $companyId, array $attributes): Order
     {
@@ -22,6 +22,7 @@ class StoreOrderAction
                 'name' => $attributes['name'],
                 'customer_id' => $attributes['customer_id'],
                 'address_id' => $attributes['address_id'],
+                'delivery_date' => $attributes['delivery_date'],
                 'total_amount' => 0,
             ]);
 

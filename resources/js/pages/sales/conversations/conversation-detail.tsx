@@ -1,8 +1,19 @@
 import { router } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, ExternalLink, Send } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Send, Trash2 } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/custom/whatsapp-icon';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -13,7 +24,7 @@ import {
 import { MessageBubble } from '@/pages/sales/conversations/message-bubble';
 import { SourceBadge } from '@/pages/sales/conversations/source-badge';
 import type { ConversationDetail } from '@/pages/sales/conversations/types';
-import { index as conversationsIndex } from '@/routes/sales/conversations';
+import { destroy as conversationDestroy, index as conversationsIndex } from '@/routes/sales/conversations';
 import { edit as customerEdit } from '@/routes/sales/customers';
 
 type ConversationDetailPanelProps = {
@@ -83,6 +94,10 @@ export function ConversationDetailPanel({
                 </p>
             </div>
         );
+    }
+
+    function handleDelete() {
+        router.delete(conversationDestroy.url(detail!.id));
     }
 
     function handleToggleAgent() {
@@ -195,6 +210,36 @@ export function ConversationDetailPanel({
                                 Modo operador
                             </span>
                         ) : null}
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 text-muted-foreground hover:text-destructive"
+                                    aria-label="Eliminar conversación"
+                                >
+                                    <Trash2 className="size-3.5" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Eliminar conversación?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Se eliminarán todos los mensajes e historial del agente de forma permanente. Esta acción no se puede deshacer.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={handleDelete}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                        Eliminar
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </div>
             </header>

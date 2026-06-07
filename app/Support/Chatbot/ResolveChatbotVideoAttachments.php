@@ -57,7 +57,7 @@ class ResolveChatbotVideoAttachments
         $videoAttachments = $products
             ->filter(fn (array $product): bool => filled($product['video']['url'] ?? null))
             ->unique('id')
-            ->reject(fn (array $product): bool => in_array($product['video']['url'], $alreadySentVideoUrls, true))
+            ->reject(fn (array $product): bool => in_array($this->absoluteUrl((string) $product['video']['url']), $alreadySentVideoUrls, true))
             ->map(fn (array $product): array => [
                 'type' => 'video',
                 'url' => $this->absoluteUrl((string) $product['video']['url']),
@@ -143,44 +143,25 @@ class ResolveChatbotVideoAttachments
         ?array $productContext,
         ChatbotConversation $conversation,
     ): Collection {
-        $products = $this->productsFromToolResults($response);
-
-        if ($productContext !== null) {
-            $products = $products->merge(
-                $this->productFromContext($companyId, $productContext),
-            );
-        }
-
-        $searchText = $this->conversationUserText($conversation).' '.$userMessage;
-
         $catalog = collect((new GetProductsAction)->execute($companyId));
 
+        $products = collect();
+
+        if ($productContext !== null) {
+            $products = $this->productFromContext($companyId, $productContext);
+        }
+
+        $userSearchText = $this->conversationUserText($conversation).' '.$userMessage;
+        $agentText = $this->normalize($response->text);
+
         $matched = $catalog->filter(
-            fn (array $product): bool => $this->matchesProduct($searchText, $product),
+            fn (array $product): bool => $this->matchesProduct($userSearchText, $product)
+                || $this->productMentionedInText($agentText, $product),
         );
 
         return $products
             ->merge($matched)
             ->unique('id')
-            ->values();
-    }
-
-    /**
-     * @return Collection<int, array<string, mixed>>
-     */
-    private function productsFromToolResults(AgentResponse $response): Collection
-    {
-        return $response->toolResults
-            ->filter(fn (ToolResult $toolResult): bool => $toolResult->name === 'get_products')
-            ->flatMap(function (ToolResult $toolResult): array {
-                if (! is_string($toolResult->result)) {
-                    return [];
-                }
-
-                $decoded = json_decode($toolResult->result, true);
-
-                return is_array($decoded) ? $decoded : [];
-            })
             ->values();
     }
 

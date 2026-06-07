@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sales;
 
+use App\Actions\Sales\Conversations\DeleteConversationAction;
 use App\Actions\Sales\Conversations\GetConversationDetailAction;
 use App\Actions\Sales\Conversations\ListConversationsAction;
 use App\Actions\Sales\Conversations\MapConversationListItemAction;
@@ -96,5 +97,16 @@ class ConversationsController extends Controller
         $action->execute($conversation, $validated['message']);
 
         return back();
+    }
+
+    public function destroy(
+        ChatbotConversation $conversation,
+        DeleteConversationAction $action,
+    ): RedirectResponse {
+        $this->authorize('delete', $conversation);
+
+        $action->execute($conversation);
+
+        return to_route('sales.conversations.index');
     }
 }

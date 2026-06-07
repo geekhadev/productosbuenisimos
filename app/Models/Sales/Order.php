@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
     'customer_id',
     'address_id',
     'total_amount',
+    'delivery_date',
 ])]
 class Order extends Model
 {
@@ -143,6 +144,7 @@ class Order extends Model
     {
         return [
             'total_amount' => 'decimal:2',
+            'delivery_date' => 'date',
         ];
     }
 

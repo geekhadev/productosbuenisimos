@@ -15,7 +15,13 @@ class CreateCustomerAddressAction
         string $customerId,
         ?string $countryName,
         ?string $stateName,
-        ?string $address,
+        ?string $cityName = null,
+        ?string $districtName = null,
+        ?string $streetPrefix = null,
+        ?string $houseNumber = null,
+        ?string $zipCode = null,
+        ?string $reference = null,
+        ?string $address = null,
     ): array {
         $customer = Customer::forCompany($companyId)
             ->find($customerId, ['id']);
@@ -26,10 +32,22 @@ class CreateCustomerAddressAction
 
         $countryName = $this->normalize($countryName);
         $stateName = $this->normalize($stateName);
+        $cityName = $this->normalize($cityName);
+        $districtName = $this->normalize($districtName);
+        $streetPrefix = $this->normalize($streetPrefix);
+        $houseNumber = $this->normalize($houseNumber);
+        $zipCode = $this->normalize($zipCode);
+        $reference = $this->normalize($reference);
         $address = $this->normalize($address);
 
-        if ($countryName === null && $stateName === null && $address === null) {
-            return ['error' => 'Debes proporcionar al menos uno de: country_name, state_name o address.'];
+        $hasData = $countryName !== null
+            || $stateName !== null
+            || $cityName !== null
+            || $districtName !== null
+            || $address !== null;
+
+        if (! $hasData) {
+            return ['error' => 'Debes proporcionar al menos uno de: country_name, state_name, city_name, district_name o address.'];
         }
 
         $nextSortOrder = (int) CustomerAddress::query()
@@ -41,6 +59,12 @@ class CreateCustomerAddressAction
             'sort_order' => $nextSortOrder,
             'country_name' => $countryName,
             'state_name' => $stateName,
+            'city_name' => $cityName,
+            'district_name' => $districtName,
+            'street_prefix' => $streetPrefix,
+            'house_number' => $houseNumber,
+            'zip_code' => $zipCode,
+            'reference' => $reference,
             'address' => $address,
         ]);
 
@@ -50,6 +74,12 @@ class CreateCustomerAddressAction
             'sort_order',
             'country_name',
             'state_name',
+            'city_name',
+            'district_name',
+            'street_prefix',
+            'house_number',
+            'zip_code',
+            'reference',
             'address',
         ]);
     }

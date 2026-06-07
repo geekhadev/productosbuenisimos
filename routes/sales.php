@@ -19,6 +19,8 @@ Route::patch('conversations/{conversation}/toggle-agent', [ConversationsControll
     ->name('conversations.toggle-agent');
 Route::post('conversations/{conversation}/operator-message', [ConversationsController::class, 'operatorMessage'])
     ->name('conversations.operator-message');
+Route::delete('conversations/{conversation}', [ConversationsController::class, 'destroy'])
+    ->name('conversations.destroy');
 
 Route::resource('customers', CustomersController::class)->except(['show']);
 

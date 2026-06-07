@@ -20,6 +20,12 @@ class ConversationsPolicy
             && $this->forSessionCompany($conversation);
     }
 
+    public function delete(User $user, ChatbotConversation $conversation): bool
+    {
+        return $this->granted($user, 'sales.conversations.list')
+            && $this->forSessionCompany($conversation);
+    }
+
     private function granted(User $user, string $slug): bool
     {
         if ($user->type === UserType::Root) {

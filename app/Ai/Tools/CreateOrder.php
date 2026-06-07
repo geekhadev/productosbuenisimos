@@ -61,6 +61,10 @@ class CreateOrder implements Tool
                 ->max(255)
                 ->nullable()
                 ->required(),
+            'delivery_date' => $schema
+                ->string()
+                ->description('Fecha de entrega deseada por el cliente en formato YYYY-MM-DD (ej. "2026-06-15").')
+                ->required(),
         ];
     }
 }

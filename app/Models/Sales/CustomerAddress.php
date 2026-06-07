@@ -14,6 +14,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'sort_order',
     'country_name',
     'state_name',
+    'city_name',
+    'district_name',
+    'street_prefix',
+    'house_number',
+    'zip_code',
+    'reference',
     'address',
 ])]
 class CustomerAddress extends Model
