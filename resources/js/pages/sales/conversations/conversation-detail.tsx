@@ -1,8 +1,9 @@
 import { router } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, ExternalLink, Send, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, ExternalLink, Send, Trash2 } from 'lucide-react';
+import {  useEffect, useRef, useState } from 'react';
+import type {FormEvent} from 'react';
 import { WhatsAppIcon } from '@/components/custom/whatsapp-icon';
-import { type FormEvent, useEffect, useRef, useState } from 'react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -24,7 +25,11 @@ import {
 import { MessageBubble } from '@/pages/sales/conversations/message-bubble';
 import { SourceBadge } from '@/pages/sales/conversations/source-badge';
 import type { ConversationDetail } from '@/pages/sales/conversations/types';
-import { destroy as conversationDestroy, index as conversationsIndex } from '@/routes/sales/conversations';
+import {
+    destroy as conversationDestroy,
+    downloadTxt as conversationDownloadTxt,
+    index as conversationsIndex,
+} from '@/routes/sales/conversations';
 import { edit as customerEdit } from '@/routes/sales/customers';
 
 type ConversationDetailPanelProps = {
@@ -77,7 +82,9 @@ export function ConversationDetailPanel({
 
     // Polling cada 10 segundos
     useEffect(() => {
-        if (detail == null) return;
+        if (detail == null) {
+return;
+}
 
         const interval = setInterval(() => {
             router.reload({ only: ['selected'], preserveScroll: true });
@@ -111,7 +118,9 @@ export function ConversationDetailPanel({
     function handleSendOperatorMessage(e: FormEvent) {
         e.preventDefault();
 
-        if (!operatorMessage.trim() || isSending) return;
+        if (!operatorMessage.trim() || isSending) {
+return;
+}
 
         setIsSending(true);
 
@@ -210,7 +219,20 @@ export function ConversationDetailPanel({
                                 Modo operador
                             </span>
                         ) : null}
-                        <AlertDialog>
+                        <div className="flex items-center gap-0.5">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 text-muted-foreground"
+                                aria-label="Descargar conversación en TXT"
+                                asChild
+                            >
+                                <a href={conversationDownloadTxt.url(detail.id)}>
+                                    <Download className="size-3.5" />
+                                </a>
+                            </Button>
+                            <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button
                                     type="button"
@@ -240,6 +262,7 @@ export function ConversationDetailPanel({
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
+                        </div>
                     </div>
                 </div>
             </header>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Sales;
 
 use App\Actions\Sales\Conversations\DeleteConversationAction;
+use App\Actions\Sales\Conversations\ExportConversationTxtAction;
 use App\Actions\Sales\Conversations\GetConversationDetailAction;
 use App\Actions\Sales\Conversations\ListConversationsAction;
 use App\Actions\Sales\Conversations\MapConversationListItemAction;
@@ -13,6 +14,7 @@ use App\Models\Public\ChatbotConversation;
 use App\Support\SelectedCompanySession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -108,5 +110,19 @@ class ConversationsController extends Controller
         $action->execute($conversation);
 
         return to_route('sales.conversations.index');
+    }
+
+    public function downloadTxt(
+        ChatbotConversation $conversation,
+        ExportConversationTxtAction $action,
+    ): HttpResponse {
+        $this->authorize('view', $conversation);
+
+        $export = $action->execute($conversation);
+
+        return response($export['content'], 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$export['filename'].'"',
+        ]);
     }
 }

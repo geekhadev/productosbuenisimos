@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Sales\AgentConfigController;
-use App\Http\Controllers\Sales\ConversationTagsController;
 use App\Http\Controllers\Sales\ConversationsController;
+use App\Http\Controllers\Sales\ConversationTagsController;
 use App\Http\Controllers\Sales\CustomersController;
 use App\Http\Controllers\Sales\LeadsController;
 use App\Http\Controllers\Sales\OrderFulfillmentController;
@@ -22,6 +22,8 @@ Route::post('conversations/{conversation}/operator-message', [ConversationsContr
     ->name('conversations.operator-message');
 Route::delete('conversations/{conversation}', [ConversationsController::class, 'destroy'])
     ->name('conversations.destroy');
+Route::get('conversations/{conversation}/download-txt', [ConversationsController::class, 'downloadTxt'])
+    ->name('conversations.download-txt');
 
 Route::resource('conversation-tags', ConversationTagsController::class)->except(['show', 'create', 'edit']);
 
