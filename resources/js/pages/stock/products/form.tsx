@@ -8,6 +8,7 @@ import {
     ProductMediaUploader,
     ProductMediaUploaderPending,
 } from '@/components/custom/product-media-uploader';
+import { ProductSimilarProducts } from '@/components/custom/product-similar-products';
 import {
     ProductVideoUploader,
     ProductVideoUploaderPending,
@@ -17,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useProductForm } from '@/pages/stock/products/hooks/use-product-form';
 import { useProductMedia } from '@/pages/stock/products/hooks/use-product-media';
+import { useSimilarProducts } from '@/pages/stock/products/hooks/use-similar-products';
 import type { ProductsFormPageProps } from '@/pages/stock/products/types';
 import { index as productsIndex } from '@/routes/stock/products';
 
@@ -37,6 +39,18 @@ function ProductForm(props: ProductsFormPageProps) {
         uploadVideo,
         deleteVideo,
     } = useProductMedia(props.media);
+
+    const {
+        similar,
+        error: similarError,
+        searchResults,
+        searching,
+        saving: savingSimilar,
+        searchProducts,
+        attachProduct,
+        detachProduct,
+        clearSearch,
+    } = useSimilarProducts(productId ?? '', props.similar);
 
     return (
         <>
@@ -62,19 +76,19 @@ function ProductForm(props: ProductsFormPageProps) {
 
                 <div className={isEdit && productId != null ? 'grid gap-6 xl:grid-cols-2' : ''}>
                     <form onSubmit={submit} className="space-y-6">
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <FormTextInput
-                                label="Nombre"
-                                required
-                                error={form.errors.name}
-                                inputProps={{
-                                    id: 'product-name',
-                                    name: 'name',
-                                    maxLength: 255,
-                                    value: form.data.name,
-                                    onChange: (e) => form.setData('name', e.target.value),
-                                }}
-                            />
+                        <FormTextInput
+                            label="Nombre"
+                            required
+                            error={form.errors.name}
+                            inputProps={{
+                                id: 'product-name',
+                                name: 'name',
+                                maxLength: 255,
+                                value: form.data.name,
+                                onChange: (e) => form.setData('name', e.target.value),
+                            }}
+                        />
+                        <div className="grid gap-4 sm:grid-cols-3">
                             <FormTextInput
                                 label="Código"
                                 required
@@ -110,9 +124,6 @@ function ProductForm(props: ProductsFormPageProps) {
                                     onChange: (e) => form.setData('price', e.target.value),
                                 }}
                             />
-                        </div>
-
-                        <div className="grid gap-4 sm:grid-cols-3">
                             <FormTextInput
                                 label="Ancho"
                                 error={form.errors.width}
@@ -192,6 +203,29 @@ function ProductForm(props: ProductsFormPageProps) {
                                 onChange: (e) => form.setData('description', e.target.value),
                             }}
                         />
+
+                        {isEdit && productId != null ? (
+                            <section className="space-y-2 rounded-lg border border-border p-4">
+                                <div>
+                                    <h2 className="text-base font-semibold tracking-tight">
+                                        Productos similares
+                                    </h2>
+                                </div>
+
+                                <ProductSimilarProducts
+                                    similar={similar}
+                                    editable={editable}
+                                    searchResults={searchResults}
+                                    searching={searching}
+                                    saving={savingSimilar}
+                                    onSearch={searchProducts}
+                                    onAttach={(id) => void attachProduct(id)}
+                                    onDetach={(id) => void detachProduct(id)}
+                                    onClearSearch={clearSearch}
+                                />
+                                <InputError message={similarError ?? undefined} />
+                            </section>
+                        ) : null}
 
                         <div className="flex flex-row flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-4">
                             <div className="grid min-w-0 gap-1">

@@ -12,6 +12,7 @@ export type OrderRow = {
     can: {
         update: boolean;
         delete: boolean;
+        view: boolean;
     };
 };
 

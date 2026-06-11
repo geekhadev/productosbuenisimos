@@ -29,5 +29,8 @@ Route::resource('leads', LeadsController::class)->except(['show']);
 Route::post('orders/fulfillment/send-to-contraentrega', [OrderFulfillmentController::class, 'sendToContraEntrega'])
     ->name('orders.fulfillment.send-to-contraentrega');
 
+Route::get('orders/{order}/pdf', [OrdersController::class, 'pdf'])
+    ->name('orders.pdf');
+
 Route::resource('orders', OrdersController::class)
     ->except(['show', 'create']);

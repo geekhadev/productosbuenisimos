@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { PencilIcon, SendIcon, TrashIcon } from 'lucide-react';
+import { FileTextIcon, PencilIcon, SendIcon, TrashIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import {
     pickTabledataListShellConfig,
@@ -109,6 +109,18 @@ function OrdersIndex() {
                 headerClassName: 'w-0 text-right',
                 render: (row) => (
                     <div className="flex justify-end gap-1">
+                        {row.can.view ? (
+                            <Button variant="outline" size="icon" type="button" asChild>
+                                <a
+                                    href={`/sales/orders/${row.id}/pdf`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={`Descargar PDF del pedido ${row.name}`}
+                                >
+                                    <FileTextIcon className="size-3" />
+                                </a>
+                            </Button>
+                        ) : null}
                         {row.can.update ? (
                             <Button variant="outline" size="icon" type="button" asChild>
                                 <Link href={edit.url(row.id)} aria-label={`Editar ${row.name}`}>

@@ -63,6 +63,7 @@ class ProductsController extends Controller
         return Inertia::render('stock/products/form', [
             'product' => null,
             'media' => ['images' => [], 'video' => null],
+            'similar' => [],
             'can' => [
                 'updateMedia' => false,
             ],
@@ -97,6 +98,7 @@ class ProductsController extends Controller
         return Inertia::render('stock/products/form', [
             'product' => $this->productFormProps($product),
             'media' => ProductMediaPayload::forProduct($product),
+            'similar' => $this->similarPayload($product),
             'can' => [
                 'updateMedia' => $request->user()?->can('update', $product) ?? false,
             ],
@@ -143,6 +145,24 @@ class ProductsController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Producto eliminado.']);
 
         return to_route('stock.products.index');
+    }
+
+    /**
+     * @return list<array<string, string>>
+     */
+    private function similarPayload(Product $product): array
+    {
+        return $product->similarProducts()
+            ->orderBy('name')
+            ->get(['stock_products.id', 'name', 'code', 'sku'])
+            ->map(fn (Product $p): array => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'code' => $p->code,
+                'sku' => $p->sku,
+            ])
+            ->values()
+            ->all();
     }
 
     /**

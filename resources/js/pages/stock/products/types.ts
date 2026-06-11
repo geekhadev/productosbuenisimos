@@ -76,9 +76,17 @@ export type ProductMediaPayload = {
     video: ProductMediaItem | null;
 };
 
+export type SimilarProductItem = {
+    id: string;
+    name: string;
+    code: string;
+    sku: string;
+};
+
 export type ProductsFormPageProps = {
     product: ProductFormRecord | null;
     media: ProductMediaPayload;
+    similar: SimilarProductItem[];
     can: {
         updateMedia: boolean;
     };

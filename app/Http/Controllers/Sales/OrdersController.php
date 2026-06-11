@@ -14,8 +14,10 @@ use App\Models\Sales\Customer;
 use App\Models\Sales\Order;
 use App\Models\User;
 use App\Support\SelectedCompanySession;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -111,6 +113,26 @@ class OrdersController extends Controller
         return to_route('sales.orders.index');
     }
 
+    public function pdf(Order $order): HttpResponse
+    {
+        $this->authorize('view', $order);
+
+        $order->load(['items.product', 'customer', 'address', 'company']);
+
+        $logoPath = public_path('assets/logo.png');
+        $logoData = file_exists($logoPath)
+            ? 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath))
+            : null;
+
+        $pdf = Pdf::loadView('pdf.order', [
+            'order' => $order,
+            'company' => $order->company,
+            'logoData' => $logoData,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream("pedido-{$order->name}.pdf");
+    }
+
     public function destroy(Request $request, Order $order, DeleteOrderAction $action): RedirectResponse
     {
         $this->authorize('delete', $order);
@@ -136,6 +158,7 @@ class OrdersController extends Controller
             'items_count' => (int) ($order->items_count ?? $order->items()->count()),
             'created_at' => $order->created_at?->toIso8601String(),
             'can' => [
+                'view' => $user->can('view', $order),
                 'update' => $user->can('update', $order),
                 'delete' => $user->can('delete', $order),
             ],
