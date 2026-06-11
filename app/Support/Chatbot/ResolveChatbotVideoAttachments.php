@@ -180,13 +180,13 @@ class ResolveChatbotVideoAttachments
                 ->values();
         }
 
-        $agentMatchedFromUserInterest = $userMatched->filter(
+        $agentMatchedFromCatalog = $catalog->filter(
             fn (array $product): bool => $this->productMentionedInAgentText($agentText, $product),
         );
 
         return $products
             ->merge($userMatched)
-            ->merge($agentMatchedFromUserInterest)
+            ->merge($agentMatchedFromCatalog)
             ->unique('id')
             ->values();
     }
