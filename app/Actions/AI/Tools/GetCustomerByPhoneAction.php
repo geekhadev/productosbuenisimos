@@ -13,7 +13,7 @@ class GetCustomerByPhoneAction
     {
         $customer = Customer::forCompany($companyId)
             ->where('phone', $phone)
-            ->first(['id', 'full_name', 'phone']);
+            ->first(['id', 'phone']);
 
         if ($customer === null) {
             return null;
@@ -21,7 +21,6 @@ class GetCustomerByPhoneAction
 
         return [
             'id' => $customer->id,
-            'full_name' => $customer->full_name,
             'phone' => $customer->phone,
         ];
     }
