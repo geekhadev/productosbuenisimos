@@ -20,7 +20,8 @@ class GetSimilarProducts implements Tool
     public function description(): Stringable|string
     {
         return 'Devuelve los productos similares asociados a los productos de un pedido. '
-            .'Úsalo para ofrecer venta cruzada después de confirmar el pedido principal. '
+            .'Úsalo SOLO después de registrar el pedido principal con create_order (Paso 12). '
+            .'Nunca lo invoques antes de cerrar el pedido. '
             .'Excluye automáticamente los productos que el cliente ya está comprando.';
     }
 

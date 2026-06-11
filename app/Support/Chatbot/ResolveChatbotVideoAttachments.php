@@ -16,6 +16,17 @@ use Laravel\Ai\Responses\Data\ToolResult;
 class ResolveChatbotVideoAttachments
 {
     /**
+     * @var list<string>
+     */
+    private const STOP_WORDS = [
+        'para', 'como', 'este', 'esta', 'estos', 'estas', 'con', 'sin', 'por',
+        'una', 'uno', 'del', 'los', 'las', 'que', 'son', 'mas', 'muy', 'cada',
+        'tipo', 'otro', 'otra', 'producto', 'productos', 'contamos', 'tambien',
+        'interesarle', 'agregar', 'pedido', 'don', 'dona', 'donde', 'desde',
+        'hasta', 'sobre', 'entre', 'hacia', 'tiene', 'tienen', 'puede', 'pueden',
+    ];
+
+    /**
      * @param  array{id: string, name: string, code: string, sku: string, price: float|int|string}|null  $productContext
      * @return list<array{type: string, url: string, product_name: string}>
      */
@@ -128,7 +139,7 @@ class ResolveChatbotVideoAttachments
         }
 
         return $products->contains(
-            fn (array $product): bool => $this->productMentionedInText($agentText, $product),
+            fn (array $product): bool => $this->productMentionedInAgentText($agentText, $product),
         );
     }
 
@@ -154,13 +165,28 @@ class ResolveChatbotVideoAttachments
         $userSearchText = $this->conversationUserText($conversation).' '.$userMessage;
         $agentText = $this->normalize($response->text);
 
-        $matched = $catalog->filter(
-            fn (array $product): bool => $this->matchesProduct($userSearchText, $product)
-                || $this->productMentionedInText($agentText, $product),
+        $userMatched = $catalog->filter(
+            fn (array $product): bool => $this->matchesProduct($userSearchText, $product),
+        );
+
+        if ($this->getSimilarProductsWasInvoked($response)) {
+            $crossSellMatched = $this->productsFromSimilarProductsTool($response)
+                ->filter(fn (array $product): bool => $this->productMentionedInAgentText($agentText, $product));
+
+            return $products
+                ->merge($userMatched)
+                ->merge($crossSellMatched)
+                ->unique('id')
+                ->values();
+        }
+
+        $agentMatchedFromUserInterest = $userMatched->filter(
+            fn (array $product): bool => $this->productMentionedInAgentText($agentText, $product),
         );
 
         return $products
-            ->merge($matched)
+            ->merge($userMatched)
+            ->merge($agentMatchedFromUserInterest)
             ->unique('id')
             ->values();
     }
@@ -212,6 +238,37 @@ class ResolveChatbotVideoAttachments
         );
     }
 
+    private function getSimilarProductsWasInvoked(AgentResponse $response): bool
+    {
+        return $response->toolResults->contains(
+            fn (ToolResult $toolResult): bool => $toolResult->name === 'get_similar_products',
+        );
+    }
+
+    /**
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function productsFromSimilarProductsTool(AgentResponse $response): Collection
+    {
+        $toolResult = $response->toolResults->first(
+            fn (ToolResult $toolResult): bool => $toolResult->name === 'get_similar_products',
+        );
+
+        if ($toolResult === null) {
+            return collect();
+        }
+
+        $decoded = is_string($toolResult->result)
+            ? json_decode($toolResult->result, true)
+            : $toolResult->result;
+
+        if (! is_array($decoded)) {
+            return collect();
+        }
+
+        return collect($decoded)->filter(fn (mixed $item): bool => is_array($item) && filled($item['id'] ?? null));
+    }
+
     /**
      * @param  array<string, mixed>  $product
      */
@@ -243,15 +300,33 @@ class ResolveChatbotVideoAttachments
     /**
      * @param  array<string, mixed>  $product
      */
-    private function productMentionedInText(string $normalizedText, array $product): bool
+    private function productMentionedInAgentText(string $normalizedText, array $product): bool
     {
-        foreach ($this->significantTokens($this->normalize((string) ($product['name'] ?? ''))) as $token) {
-            if (str_contains($normalizedText, $token)) {
-                return true;
-            }
+        $name = $this->normalize((string) ($product['name'] ?? ''));
+
+        if ($name === '') {
+            return false;
         }
 
-        return false;
+        if (str_contains($normalizedText, $name)) {
+            return true;
+        }
+
+        $tokens = $this->significantTokens($name);
+
+        if ($tokens === []) {
+            return false;
+        }
+
+        $matchedCount = collect($tokens)
+            ->filter(fn (string $token): bool => str_contains($normalizedText, $token))
+            ->count();
+
+        if (count($tokens) === 1) {
+            return $matchedCount === 1 && mb_strlen($tokens[0]) >= 5;
+        }
+
+        return $matchedCount >= 2;
     }
 
     private function mentionsVideo(string $normalizedText): bool
@@ -268,6 +343,7 @@ class ResolveChatbotVideoAttachments
         return collect(explode(' ', $normalizedText))
             ->map(fn (string $token): string => trim($token))
             ->filter(fn (string $token): bool => mb_strlen($token) >= 4)
+            ->reject(fn (string $token): bool => in_array($token, self::STOP_WORDS, true))
             ->unique()
             ->values()
             ->all();

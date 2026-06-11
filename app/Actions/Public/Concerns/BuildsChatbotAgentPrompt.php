@@ -45,6 +45,8 @@ PROMPT;
 - Antes de describir un producto, invoca `get_products` para obtener datos reales del catálogo.
 - NO inventes enlaces de video ni uses markdown como [Ver Video](#). El sistema adjunta el video automáticamente cuando presentas un producto.
 - En tu mensaje puedes mencionar que compartes el video de funcionamiento; no pegues URLs manualmente.
+- Si el visitante ya mencionó un producto en mensajes anteriores, no vuelvas a preguntarle qué producto le interesa; continúa con la presentación de ese producto.
+- Nunca invoques `get_similar_products` ni ofrezcas venta cruzada hasta haber registrado el pedido con `create_order`.
 PROMPT;
 
         if ($alreadySentVideoProductNames !== []) {
