@@ -13,6 +13,12 @@ class ConversationTagSeeder extends Seeder
      */
     private const TAGS = [
         [
+            'sort_order' => 0,
+            'name' => 'Conversación iniciada',
+            'description' => 'El cliente abrió el chat y la conversación quedó activa.',
+            'color' => 'zinc-500',
+        ],
+        [
             'sort_order' => 1,
             'name' => 'Contacto iniciado',
             'description' => 'El cliente inició la conversación y respondió con su nombre (Paso 1 completado).',

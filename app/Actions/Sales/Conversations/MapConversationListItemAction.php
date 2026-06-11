@@ -23,6 +23,9 @@ class MapConversationListItemAction
             'lead_status' => is_string($leadStatus) ? $leadStatus : null,
             'customer_id' => is_string($customerId) ? $customerId : null,
             'source' => $conversation->source->value,
+            'conversation_tag' => $conversation->relationLoaded('tag') && $conversation->tag !== null
+                ? $conversation->tag->toFrontendArray()
+                : null,
             'last_message_preview' => $conversation->getAttribute('last_message_preview'),
             'last_activity_at' => $conversation->getAttribute('last_activity_at') instanceof \DateTimeInterface
                 ? $conversation->getAttribute('last_activity_at')->format(\DateTimeInterface::ATOM)

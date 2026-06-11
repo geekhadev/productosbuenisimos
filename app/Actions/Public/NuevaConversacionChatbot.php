@@ -3,6 +3,7 @@
 namespace App\Actions\Public;
 
 use App\Actions\Public\Concerns\EnsuresChatbotLead;
+use App\Actions\Sales\Conversations\SyncConversationTagAction;
 use App\Enums\ChatbotSource;
 use App\Models\Public\ChatbotConversation;
 use App\Support\ChatbotCompany;
@@ -14,7 +15,10 @@ class NuevaConversacionChatbot
 {
     use EnsuresChatbotLead;
 
-    public function __construct(private readonly ConversationStore $conversationStore) {}
+    public function __construct(
+        private readonly ConversationStore $conversationStore,
+        private readonly SyncConversationTagAction $syncConversationTag,
+    ) {}
 
     /**
      * @return array{
@@ -50,6 +54,8 @@ class NuevaConversacionChatbot
             ]);
 
             $this->ensureLeadForPhone($current->company_id, $current->phone, $source);
+
+            $this->syncConversationTag->execute($conversation->fresh(['messages', 'tag']));
 
             return [
                 'conversation_id' => $conversation->id,

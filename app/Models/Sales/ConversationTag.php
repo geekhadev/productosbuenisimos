@@ -4,6 +4,7 @@ namespace App\Models\Sales;
 
 use App\Models\Company;
 use App\Models\Public\ChatbotConversation;
+use App\Support\SelectedCompanySession;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -11,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
-use App\Support\SelectedCompanySession;
 
 #[Fillable([
     'company_id',
@@ -24,7 +24,40 @@ class ConversationTag extends Model
 {
     use HasUuids;
 
+    public const SORT_CONVERSATION_STARTED = 0;
+
+    public const SORT_CONTACT_STARTED = 1;
+
+    public const SORT_PRODUCT_CONSULTED = 2;
+
+    public const SORT_PRODUCT_PRESENTED = 3;
+
+    public const SORT_INTEREST_CONFIRMED = 4;
+
+    public const SORT_ADDRESS_IN_PROGRESS = 5;
+
+    public const SORT_ADDRESS_COMPLETE = 6;
+
+    public const SORT_ORDER_CONFIRMED = 7;
+
+    public const SORT_ORDER_REGISTERED = 8;
+
+    public const SORT_CROSS_SELL_OFFERED = 9;
+
     protected $table = 'sales_conversation_tags';
+
+    /**
+     * @return array{id: string, name: string, color: string, sort_order: int}
+     */
+    public function toFrontendArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'color' => $this->color,
+            'sort_order' => $this->sort_order,
+        ];
+    }
 
     /**
      * @return BelongsTo<Company, $this>

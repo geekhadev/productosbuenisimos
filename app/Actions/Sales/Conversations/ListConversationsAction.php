@@ -40,6 +40,7 @@ class ListConversationsAction
             );
 
         $query = ChatbotConversation::query()
+            ->with('tag')
             ->where('chatbot_conversations.company_id', $companyId)
             ->leftJoinSub($bestLeadSub, 'ranked_leads', function (JoinClause $join): void {
                 $join->on('ranked_leads.phone', '=', 'chatbot_conversations.phone')

@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { ConversationTagBadge } from '@/pages/sales/conversations/conversation-tag-badge';
 import {
     CONTACT_TYPE_LABELS,
     LEAD_STATUS_LABELS,
@@ -68,6 +69,9 @@ export function ConversationItem({ item, isSelected }: ConversationItemProps) {
                 {item.contact_name}
             </p>
             <div className="flex shrink-0 items-center gap-1">
+                {item.conversation_tag ? (
+                    <ConversationTagBadge tag={item.conversation_tag} />
+                ) : null}
                 <SourceBadge
                     source={item.source}
                     showLabel={false}

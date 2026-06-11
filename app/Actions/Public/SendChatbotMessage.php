@@ -3,6 +3,7 @@
 namespace App\Actions\Public;
 
 use App\Actions\Public\Concerns\BuildsChatbotAgentPrompt;
+use App\Actions\Sales\Conversations\SyncConversationTagAction;
 use App\Ai\Agents\SalesAgent;
 use App\Enums\ChatbotMessageRole;
 use App\Enums\ChatbotSource;
@@ -24,6 +25,7 @@ class SendChatbotMessage
 
     public function __construct(
         private readonly ResolveChatbotVideoAttachments $videoAttachments,
+        private readonly SyncConversationTagAction $syncConversationTag,
     ) {}
 
     /**
@@ -123,6 +125,11 @@ class SendChatbotMessage
                 'output_tokens' => $response->usage->completionTokens,
                 'created_at' => now(),
             ]);
+
+            $this->syncConversationTag->execute(
+                $conversation->fresh(['messages', 'tag']),
+                $response,
+            );
 
             return [
                 'reply' => $reply,

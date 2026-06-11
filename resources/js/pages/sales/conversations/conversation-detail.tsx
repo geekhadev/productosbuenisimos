@@ -18,6 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { ConversationTagBadge } from '@/pages/sales/conversations/conversation-tag-badge';
 import {
     CONTACT_TYPE_LABELS,
     LEAD_STATUS_LABELS,
@@ -182,6 +183,9 @@ return;
                                 {contactTypeLabel(detail)}
                             </Badge>
                             <SourceBadge source={detail.source} />
+                            {detail.conversation_tag ? (
+                                <ConversationTagBadge tag={detail.conversation_tag} />
+                            ) : null}
                             {(detail.total_input_tokens > 0 || detail.total_output_tokens > 0) ? (
                                 <span className="text-xs text-muted-foreground">
                                     ↑{detail.total_input_tokens.toLocaleString()} ↓{detail.total_output_tokens.toLocaleString()} tok

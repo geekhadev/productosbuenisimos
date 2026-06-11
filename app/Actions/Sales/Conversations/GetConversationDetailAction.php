@@ -17,6 +17,7 @@ class GetConversationDetailAction
     {
         $conversation->load([
             'messages' => fn ($query) => $query->orderBy('created_at'),
+            'tag',
         ]);
 
         $lead = $this->resolveLead($conversation);
@@ -30,6 +31,7 @@ class GetConversationDetailAction
             'lead_status' => $lead?->status?->value,
             'customer_id' => $lead?->customer_id,
             'source' => $conversation->source->value,
+            'conversation_tag' => $conversation->tag?->toFrontendArray(),
             'messages' => $conversation->messages
                 ->map(fn (ChatbotMessage $message): array => [
                     ...ChatbotMessagePayload::format($message),

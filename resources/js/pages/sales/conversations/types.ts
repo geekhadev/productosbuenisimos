@@ -1,5 +1,12 @@
 import type { Paginated } from '@/types/pagination';
 
+export type ConversationTagSummary = {
+    id: string;
+    name: string;
+    color: string;
+    sort_order: number;
+};
+
 export type ConversationListItem = {
     id: string;
     phone: string;
@@ -8,6 +15,7 @@ export type ConversationListItem = {
     lead_status: string | null;
     customer_id: string | null;
     source: string;
+    conversation_tag: ConversationTagSummary | null;
     last_message_preview: string | null;
     last_activity_at: string;
 };
@@ -38,6 +46,7 @@ export type ConversationDetail = {
     lead_status: string | null;
     customer_id: string | null;
     source: string;
+    conversation_tag: ConversationTagSummary | null;
     messages: ConversationMessage[];
     total_input_tokens: number;
     total_output_tokens: number;
