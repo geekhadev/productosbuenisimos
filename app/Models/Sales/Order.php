@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
     'address_id',
     'total_amount',
     'delivery_date',
+    'fulfillment_sent_at',
 ])]
 class Order extends Model
 {
@@ -145,6 +146,7 @@ class Order extends Model
         return [
             'total_amount' => 'decimal:2',
             'delivery_date' => 'date',
+            'fulfillment_sent_at' => 'datetime',
         ];
     }
 

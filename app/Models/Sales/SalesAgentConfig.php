@@ -36,6 +36,16 @@ class SalesAgentConfig extends Model
 
     public const TOOL_CREATE_ORDER = 'create_order';
 
+    public const TOOL_GET_CONVERSATION_TAGS = 'get_conversation_tags';
+
+    public const TOOL_UPDATE_CONVERSATION_TAG = 'update_conversation_tag';
+
+    public const TOOL_GET_PENDING_ORDERS_FOR_CUSTOMER = 'get_pending_orders_for_customer';
+
+    public const TOOL_ADD_ITEMS_TO_ORDER = 'add_items_to_order';
+
+    public const TOOL_GET_SIMILAR_PRODUCTS = 'get_similar_products';
+
     /**
      * @var list<string>
      */
@@ -45,6 +55,11 @@ class SalesAgentConfig extends Model
         self::TOOL_CREATE_CUSTOMER,
         self::TOOL_CREATE_CUSTOMER_ADDRESS,
         self::TOOL_CREATE_ORDER,
+        self::TOOL_GET_CONVERSATION_TAGS,
+        self::TOOL_UPDATE_CONVERSATION_TAG,
+        self::TOOL_GET_PENDING_ORDERS_FOR_CUSTOMER,
+        self::TOOL_ADD_ITEMS_TO_ORDER,
+        self::TOOL_GET_SIMILAR_PRODUCTS,
     ];
 
     /**
@@ -70,6 +85,26 @@ class SalesAgentConfig extends Model
         self::TOOL_CREATE_ORDER => [
             'label' => 'Registrar pedido',
             'description' => 'Crea el pedido con los productos seleccionados.',
+        ],
+        self::TOOL_GET_CONVERSATION_TAGS => [
+            'label' => 'Consultar etiquetas de conversación',
+            'description' => 'Permite al agente obtener las etiquetas del embudo de conversión configuradas.',
+        ],
+        self::TOOL_UPDATE_CONVERSATION_TAG => [
+            'label' => 'Actualizar etiqueta de conversación',
+            'description' => 'Permite al agente registrar en qué etapa del embudo quedó el cliente.',
+        ],
+        self::TOOL_GET_PENDING_ORDERS_FOR_CUSTOMER => [
+            'label' => 'Consultar pedidos pendientes del cliente',
+            'description' => 'Obtiene los pedidos del cliente que aún no han sido enviados a fulfillment, para ofrecer venta cruzada sobre un pedido abierto.',
+        ],
+        self::TOOL_ADD_ITEMS_TO_ORDER => [
+            'label' => 'Agregar productos a pedido existente',
+            'description' => 'Agrega ítems de venta cruzada a un pedido pendiente de fulfillment, sumando cantidades si el producto ya existe.',
+        ],
+        self::TOOL_GET_SIMILAR_PRODUCTS => [
+            'label' => 'Consultar productos similares',
+            'description' => 'Obtiene los productos similares configurados para los productos de un pedido, para usarlos en la venta cruzada.',
         ],
     ];
 

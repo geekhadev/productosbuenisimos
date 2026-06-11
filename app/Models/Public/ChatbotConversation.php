@@ -4,6 +4,7 @@ namespace App\Models\Public;
 
 use App\Enums\ChatbotSource;
 use App\Models\Company;
+use App\Models\Sales\ConversationTag;
 use App\Support\SelectedCompanySession;
 use Database\Factories\Public\ChatbotConversationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -22,6 +23,7 @@ use Illuminate\Http\Request;
     'source',
     'is_active',
     'agent_paused',
+    'conversation_tag_id',
 ])]
 class ChatbotConversation extends Model
 {
@@ -34,6 +36,14 @@ class ChatbotConversation extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    /**
+     * @return BelongsTo<ConversationTag, $this>
+     */
+    public function tag(): BelongsTo
+    {
+        return $this->belongsTo(ConversationTag::class, 'conversation_tag_id');
     }
 
     /**
@@ -87,6 +97,7 @@ class ChatbotConversation extends Model
             'source' => ChatbotSource::class,
             'is_active' => 'boolean',
             'agent_paused' => 'boolean',
+            'conversation_tag_id' => 'string',
         ];
     }
 }

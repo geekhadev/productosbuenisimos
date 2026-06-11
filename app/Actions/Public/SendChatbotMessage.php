@@ -95,7 +95,7 @@ class SendChatbotMessage
             );
 
             try {
-                $response = SalesAgent::make(companyId: $company->id)
+                $response = SalesAgent::make(companyId: $company->id, chatbotConversationId: $conversation->id)
                     ->continue($conversation->agent_conversation_id, $participant)
                     ->prompt($builtPrompt);
             } catch (Throwable $exception) {

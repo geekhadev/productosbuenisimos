@@ -13,6 +13,7 @@ import {
     MessageSquare,
     MessageSquareText,
     ShoppingCart,
+    Tags,
     UserRound,
     Users,
     Warehouse,
@@ -25,6 +26,7 @@ import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
 import { edit as whatsappProvidersEdit } from '@/routes/configuration/whatsapp-providers';
 import { edit as agentEdit } from '@/routes/sales/agent';
+import { index as conversationTagsIndex } from '@/routes/sales/conversation-tags';
 import { index as conversationsIndex } from '@/routes/sales/conversations';
 import { index as customersIndex } from '@/routes/sales/customers';
 import { index as leadsIndex } from '@/routes/sales/leads';
@@ -79,6 +81,12 @@ export const mainNavItems: NavItem[] = [
                 href: conversationsIndex(),
                 icon: MessageSquareText,
                 permission: 'sales.conversations.list',
+            },
+            {
+                title: 'Etiquetas de conversación',
+                href: conversationTagsIndex(),
+                icon: Tags,
+                permission: 'sales.conversation-tags.list',
             },
             {
                 title: 'Agente de Ventas',

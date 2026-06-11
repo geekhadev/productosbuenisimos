@@ -66,6 +66,8 @@ class SendOrdersToContraEntregaAction
         try {
             $this->service->createOrder($this->buildOrderData($order));
 
+            $order->update(['fulfillment_sent_at' => now()]);
+
             return [...$base, 'success' => true, 'error' => null];
         } catch (RuntimeException $e) {
             return [...$base, 'success' => false, 'error' => $e->getMessage()];
